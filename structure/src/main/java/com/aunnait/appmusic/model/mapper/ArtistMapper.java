@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ArtistMapper {
     public ArtistDTO convertToDTO(Artist artist) {
-        return new ArtistDTO(artist.getId(), artist.getName(), artist.getNationality());
+        return new ArtistDTO(artist.getId(), artist.getName(), artist.getNationality(), artist.getDateOfBirth());
     }
 
     public Artist convertToEntity(ArtistDTO artistDTO) {
@@ -15,6 +15,7 @@ public class ArtistMapper {
         artist.setId(artistDTO.getId());
         artist.setName(artistDTO.getName());
         artist.setNationality(artistDTO.getNationality());
+        artist.setDateOfBirth(artistDTO.getDateOfBirth());
         return artist;
     }
 }

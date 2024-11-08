@@ -10,4 +10,5 @@ public interface IAlbumService {
     AlbumDTO updateAlbum(Integer id, AlbumDTO albumDTO);
     AlbumDTO addAlbum(AlbumDTO albumDTO);
     void deleteAlbum(Integer id);
+
 }

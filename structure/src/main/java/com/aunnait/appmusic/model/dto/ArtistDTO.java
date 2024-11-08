@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 @Data //Lombok autogenerate getters/setters/toString/hash
 @AllArgsConstructor
 @NoArgsConstructor
@@ -19,4 +21,5 @@ public class ArtistDTO {
     @NotNull(message = "Artist nationality cannot be null")
     @NotEmpty(message = "Artist nationality cannot be empty")
     private String nationality;
+    private Date dateOfBirth;
 }

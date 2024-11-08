@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -50,6 +51,15 @@ public class ArtistsController {
     public ResponseEntity<ArtistDTO> deleteArtist(@PathVariable Integer id) {
         artistService.deleteArtist(id);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    //Custom filter get
+    @GetMapping("/search")
+    public ResponseEntity<List<ArtistDTO>> findArtistsByAttributes(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Date dateOfBirth,
+            @RequestParam(required = false) String nationality){
+        return new ResponseEntity<>(artistService.findAllArtistByAttributes(name,dateOfBirth,nationality), HttpStatus.OK);
     }
 
 

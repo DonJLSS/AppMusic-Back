@@ -6,8 +6,11 @@ import com.aunnait.appmusic.model.mapper.ArtistMapper;
 import com.aunnait.appmusic.repository.ArtistRepository;
 import com.aunnait.appmusic.exceptions.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import com.aunnait.appmusic.utils.ArtistSpecification;
 
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -61,6 +64,14 @@ public class ArtistService implements IArtistService{
         Artist artistToDelete = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Artist: "+ id +" not found"));
         repository.delete(artistToDelete);
+    }
+
+    @Override
+    public List<ArtistDTO> findAllArtistByAttributes(String name, Date dateOfBirth, String nationality) {
+        Specification<Artist> spec = ArtistSpecification.getArtistByAttributes(name, dateOfBirth, nationality);
+        return repository.findAll(spec).stream()
+                .map(a->mapper.convertToDTO(a))
+                .collect(Collectors.toList());
     }
 
     //Argument error handling
