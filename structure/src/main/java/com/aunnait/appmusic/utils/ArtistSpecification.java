@@ -5,13 +5,13 @@ import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
 
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class ArtistSpecification {
 
-    public static Specification<Artist> getArtistByAttributes(String name, Date dateOfBirth, String nationality){
+    public static Specification<Artist> getArtistByAttributes(String name, LocalDate dateOfBirth, String nationality){
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
             if (name != null && !name.isEmpty()) {

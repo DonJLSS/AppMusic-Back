@@ -10,6 +10,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import com.aunnait.appmusic.utils.ArtistSpecification;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -67,7 +68,7 @@ public class ArtistService implements IArtistService{
     }
 
     @Override
-    public List<ArtistDTO> findAllArtistByAttributes(String name, Date dateOfBirth, String nationality) {
+    public List<ArtistDTO> findAllArtistByAttributes(String name, LocalDate dateOfBirth, String nationality) {
         Specification<Artist> spec = ArtistSpecification.getArtistByAttributes(name, dateOfBirth, nationality);
         return repository.findAll(spec).stream()
                 .map(a->mapper.convertToDTO(a))
