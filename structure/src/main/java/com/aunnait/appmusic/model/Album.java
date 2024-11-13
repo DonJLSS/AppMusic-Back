@@ -8,6 +8,9 @@ import lombok.Data;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "albums")
 @Data //Lombok autogenerate getters/setters/toString/hash
@@ -26,6 +29,9 @@ public class Album {
     @ManyToOne
     @JoinColumn(name = "artist_id", nullable = false)
     private Artist artist;
+    @OneToMany(mappedBy = "album", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Song> songs = new ArrayList<>();
+
 
 
 }

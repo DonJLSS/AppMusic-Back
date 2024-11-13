@@ -1,9 +1,13 @@
 package com.aunnait.appmusic.rest;
 
+import com.aunnait.appmusic.model.dto.AlbumDTO;
 import com.aunnait.appmusic.model.dto.ArtistDTO;
 import com.aunnait.appmusic.service.IArtistService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -53,6 +57,24 @@ public class ArtistsController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @PutMapping("/{artistId}/albums")
+    public ResponseEntity<ArtistDTO> addAlbumToArtist(
+            @PathVariable Integer artistId,
+            @RequestBody AlbumDTO albumDTO) {
+
+        ArtistDTO updatedArtist = artistService.addAlbum(artistId, albumDTO);
+        return ResponseEntity.ok(updatedArtist);
+    }
+
+    @PutMapping("/{artistId}/albums/remove")
+    public ResponseEntity<ArtistDTO> removeAlbumFromArtist(
+            @PathVariable Integer artistId,
+            @RequestBody AlbumDTO albumDTO) {
+
+        ArtistDTO updatedArtist = artistService.removeAlbum(artistId, albumDTO);
+        return ResponseEntity.ok(updatedArtist);
+    }
+
     //Custom filter get
     @GetMapping("/search")
     public ResponseEntity<List<ArtistDTO>> findArtistsByAttributes(
@@ -60,6 +82,15 @@ public class ArtistsController {
             @RequestParam(required = false) LocalDate dateOfBirth,
             @RequestParam(required = false) String nationality){
         return new ResponseEntity<>(artistService.findAllArtistByAttributes(name,dateOfBirth,nationality), HttpStatus.OK);
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<Page<ArtistDTO>> getAllArtistsPaginated(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ArtistDTO> artistsPage = artistService.findAllPaginated(pageable);
+        return ResponseEntity.ok(artistsPage);
     }
 
 

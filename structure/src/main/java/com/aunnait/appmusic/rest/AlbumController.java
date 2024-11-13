@@ -1,6 +1,7 @@
 package com.aunnait.appmusic.rest;
 
 import com.aunnait.appmusic.model.dto.AlbumDTO;
+import com.aunnait.appmusic.model.dto.ArtistDTO;
 import com.aunnait.appmusic.service.IAlbumService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -47,6 +49,18 @@ public class AlbumController {
     public ResponseEntity<AlbumDTO> deleteAlbum(@PathVariable Integer id) {
         albumService.deleteAlbum(id);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    //Custom filter get
+    @GetMapping("/search")
+    public ResponseEntity<List<AlbumDTO>> findAlbumsByAttributes(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) Integer launchYear,
+            @RequestParam(required = false) Integer songsCount,
+            @RequestParam(required = false) String coverUrl,
+            @RequestParam(required = false) String artistName){
+        return new ResponseEntity<>(albumService.findAllAlbumByAttributes(title, launchYear, songsCount, coverUrl, artistName),
+                HttpStatus.OK);
     }
 
 }

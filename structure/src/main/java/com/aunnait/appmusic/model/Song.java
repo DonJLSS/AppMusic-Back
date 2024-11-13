@@ -19,6 +19,8 @@ public class Song {
     private String title;
     private Duration duration;
     //Foreign key
-    private Integer albumId;
+    @ManyToOne
+    @JoinColumn(name = "album_id", nullable = false)
+    private Album album;
     private String songUrl;
 }

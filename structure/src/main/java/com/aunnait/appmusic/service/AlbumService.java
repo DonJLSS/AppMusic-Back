@@ -1,11 +1,15 @@
 package com.aunnait.appmusic.service;
 
 import com.aunnait.appmusic.model.Album;
+import com.aunnait.appmusic.model.Artist;
 import com.aunnait.appmusic.model.dto.AlbumDTO;
 import com.aunnait.appmusic.model.mapper.AlbumMapper;
 import com.aunnait.appmusic.repository.AlbumRepository;
+import com.aunnait.appmusic.utils.AlbumSpecification;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -61,6 +65,16 @@ public class AlbumService implements IAlbumService {
                 .orElseThrow(() -> new EntityNotFoundException("Album: "+ id +" not found"));
         albumRepository.delete(albumToDelete);
     }
+
+    @Override
+    public List<AlbumDTO> findAllAlbumByAttributes(String title, Integer launchYear,
+                                                   Integer songsCount, String coverUrl, String artistName) {
+        Specification<Album> spec = AlbumSpecification.getArtistByAttributes(title, launchYear, songsCount, coverUrl, artistName);
+        return albumRepository.findAll(spec).stream()
+                .map(a->albumMapper.toAlbumDTO(a))
+                .collect(Collectors.toList());
+    }
+
 
     //Argument error handling
     private void ErrorHandler(AlbumDTO albumDTO) {
