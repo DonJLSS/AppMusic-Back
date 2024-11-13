@@ -3,6 +3,7 @@ package com.aunnait.appmusic.service;
 import com.aunnait.appmusic.model.Album;
 import com.aunnait.appmusic.model.Artist;
 import com.aunnait.appmusic.model.dto.AlbumDTO;
+import com.aunnait.appmusic.model.dto.ArtistDTO;
 import com.aunnait.appmusic.model.mapper.AlbumMapper;
 import com.aunnait.appmusic.repository.AlbumRepository;
 import com.aunnait.appmusic.utils.AlbumSpecification;
@@ -22,6 +23,8 @@ public class AlbumService implements IAlbumService {
     AlbumRepository albumRepository;
     @Autowired
     AlbumMapper albumMapper;
+    @Autowired
+    ArtistService artistService;
 
     @Override
     public List<AlbumDTO> findAll() {
@@ -84,5 +87,9 @@ public class AlbumService implements IAlbumService {
             throw new IllegalArgumentException("Songs count can not be empty");
         if (albumDTO.getLaunchYear() == null)
             throw new IllegalArgumentException("Launch year can not be empty");
+        if(artistService.findAllArtistByAttributes(
+                albumDTO.getArtistName(),null,null).isEmpty())
+            throw new IllegalArgumentException("Artist: "+albumDTO.getArtistName()+
+                    " not registered");
     }
 }

@@ -56,7 +56,7 @@ public class ArtistService implements IArtistService{
         //Unique name on artists
         if(findAllArtistByAttributes(artistDTO.getName(),null,null).stream()
                         .anyMatch(a->a.getName().equals(artistDTO.getName())))
-            throw new IllegalArgumentException("Artist: "+ artistDTO.getName() +" duplicated");
+            throw new IllegalArgumentException("Name: "+ artistDTO.getName() +" already in use");
 
         artistToUpdate.setName(artistDTO.getName());
         artistToUpdate.setNationality(artistDTO.getNationality());
@@ -72,7 +72,7 @@ public class ArtistService implements IArtistService{
         //Unique name on artists
         if(findAllArtistByAttributes(artistDTO.getName(),null,null).stream()
                 .anyMatch(a->a.getName().equals(artistDTO.getName())))
-            throw new IllegalArgumentException("Artist: "+ artistDTO.getName() +" duplicated");
+            throw new IllegalArgumentException("Name: "+ artistDTO.getName() +" already in use");
         Artist newArtist = mapper.convertToEntity(artistDTO);
         Artist savedArtist = repository.save(newArtist);
         return mapper.convertToDTO(savedArtist);
@@ -89,6 +89,9 @@ public class ArtistService implements IArtistService{
     public ArtistDTO addAlbum(Integer artistId, AlbumDTO albumDTO){
         Artist artist = repository.findById(artistId)
                 .orElseThrow(() -> new EntityNotFoundException("Artist: "+ artistId +" not found"));
+        if(!albumDTO.getArtistName().equals(artist.getName()))
+            throw new IllegalArgumentException("Artist name: "+ albumDTO.getArtistName()+
+                    " not matching id: "+ artistId);
         Album album = albumMapper.convertToEntity(albumDTO);
         Album existing = albumRepository.findById(album.getId())
                 .orElseGet(()->albumRepository.save(album));

@@ -81,7 +81,8 @@ public class ArtistsController {
             @RequestParam(required = false) String name,
             @RequestParam(required = false) LocalDate dateOfBirth,
             @RequestParam(required = false) String nationality){
-        return new ResponseEntity<>(artistService.findAllArtistByAttributes(name,dateOfBirth,nationality), HttpStatus.OK);
+        return new ResponseEntity<>(artistService.
+                findAllArtistByAttributes(name,dateOfBirth,nationality), HttpStatus.OK);
     }
 
     @GetMapping("/all")
