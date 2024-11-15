@@ -1,15 +1,19 @@
 package com.aunnait.appmusic.service;
 
 import com.aunnait.appmusic.model.Album;
-import com.aunnait.appmusic.model.Artist;
+import com.aunnait.appmusic.model.Song;
 import com.aunnait.appmusic.model.dto.AlbumDTO;
-import com.aunnait.appmusic.model.dto.ArtistDTO;
+import com.aunnait.appmusic.model.dto.SongDTO;
 import com.aunnait.appmusic.model.mapper.AlbumMapper;
+import com.aunnait.appmusic.model.mapper.SongMapper;
 import com.aunnait.appmusic.repository.AlbumRepository;
 import com.aunnait.appmusic.utils.AlbumSpecification;
+import com.aunnait.appmusic.utils.SongOperations;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +28,12 @@ public class AlbumService implements IAlbumService {
     @Autowired
     AlbumMapper albumMapper;
     @Autowired
+    SongMapper songMapper;
+    @Lazy
+    @Autowired
     ArtistService artistService;
+    @Autowired
+    SongOperations songOperations;
 
     @Override
     public List<AlbumDTO> findAll() {
@@ -57,6 +66,11 @@ public class AlbumService implements IAlbumService {
     @Override
     public AlbumDTO addAlbum(AlbumDTO albumDTO) {
         ErrorHandler(albumDTO);
+        //Unique album title
+        if(findAllAlbumByAttributes(albumDTO.getTitle(),null,null,null,
+                null).stream()
+                .anyMatch(a->a.getTitle().equals(albumDTO.getTitle())))
+            throw new IllegalArgumentException("Album: "+ albumDTO.getTitle() +" already exists");
         Album newAlbum = albumMapper.convertToEntity(albumDTO);
         Album saved = albumRepository.save(newAlbum);
         return albumMapper.toAlbumDTO(saved);
@@ -69,13 +83,46 @@ public class AlbumService implements IAlbumService {
         albumRepository.delete(albumToDelete);
     }
 
+    //Add a song to an existing album
+    @Override
+    public AlbumDTO addSong(Integer id, SongDTO songDTO) {
+        Album album = albumRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Album: "+ id +" not found"));
+        if(!songDTO.getAlbumName().equals(album.getTitle()))
+            throw new IllegalArgumentException("Album title: "+ songDTO.getAlbumName()+
+                    " not matching id: "+ id);
+        SongDTO existing = songOperations.addSong(songDTO);
+        Song savedSong = songMapper.convertToEntity(existing,album);
+        album.getSongs().add(savedSong);
+        Album updatedAlbum = albumRepository.save(album);
+        return albumMapper.toAlbumDTO(updatedAlbum);    }
+
+
+    //Song removal from list (doesn't delete the song from database)
+    @Override
+    public AlbumDTO removeSong(Integer id, SongDTO songDTO) {
+        Album album = albumRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Album: "+ id +" not found"));
+        Song song = songMapper.convertToEntity(songDTO, album);
+        album.getSongs().remove(song);
+        Album updatedAlbum = albumRepository.save(album);
+        return albumMapper.toAlbumDTO(updatedAlbum);
+    }
+
+
     @Override
     public List<AlbumDTO> findAllAlbumByAttributes(String title, Integer launchYear,
                                                    Integer songsCount, String coverUrl, String artistName) {
-        Specification<Album> spec = AlbumSpecification.getArtistByAttributes(title, launchYear, songsCount, coverUrl, artistName);
+        Specification<Album> spec = AlbumSpecification.getAlbumByAttributes(title, launchYear, songsCount, coverUrl, artistName);
         return albumRepository.findAll(spec).stream()
                 .map(a->albumMapper.toAlbumDTO(a))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<AlbumDTO> findAllPaginated(Pageable pageable) {
+        Page<Album> albumsPage = albumRepository.findAll(pageable);
+        return albumsPage.map(albumMapper::toAlbumDTO);
     }
 
 

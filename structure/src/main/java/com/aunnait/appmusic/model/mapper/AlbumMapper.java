@@ -27,7 +27,7 @@ public class AlbumMapper {
         albumDTO.setId(album.getId());
         albumDTO.setDescription(album.getDescription());
         albumDTO.setTitle(album.getTitle());
-        albumDTO.setSongsCount(album.getSongsCount());
+        albumDTO.setSongsCount(album.getSongs().size());
         albumDTO.setLaunchYear(album.getLaunchYear());
         albumDTO.setArtistName(album.getArtist().getName());
         return albumDTO;
@@ -39,7 +39,7 @@ public class AlbumMapper {
         album.setTitle(albumDTO.getTitle());
         album.setLaunchYear(albumDTO.getLaunchYear());
         album.setDescription(albumDTO.getDescription());
-        album.setSongsCount(albumDTO.getSongsCount());
+        album.setSongsCount(album.getSongs().size());
 
         if (albumDTO.getArtistName() != null && !albumDTO.getArtistName().isEmpty()) {
             List<ArtistDTO> artistsDTO = artistService.findAllArtistByAttributes(albumDTO.getArtistName(), null, null);

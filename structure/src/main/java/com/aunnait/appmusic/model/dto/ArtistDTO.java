@@ -22,5 +22,5 @@ public class ArtistDTO {
     @NotEmpty(message = "Artist nationality cannot be empty")
     private String nationality;
     private LocalDate dateOfBirth;
-    private Integer albumsCount;
+    private Integer albumsCount=0;
 }

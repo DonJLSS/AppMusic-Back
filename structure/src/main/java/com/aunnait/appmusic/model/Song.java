@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.Duration;
 
 @Entity
 @Table(name = "songs")
@@ -17,7 +16,7 @@ public class Song {
     @Id
     private Integer id;
     private String title;
-    private Duration duration;
+    private Long duration; //Changed to long bc persistence
     //Foreign key
     @ManyToOne
     @JoinColumn(name = "album_id", nullable = false)

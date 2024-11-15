@@ -20,10 +20,15 @@ public class SongDTO {
 
     @NotNull(message = "Song duration cannot be null")
     @NotEmpty(message = "Song duration cannot be empty")
-    private Duration duration;
+    private Long duration;  //Changed from java.time.Duration to Long bc persistence
 
     @NotNull(message = "Url cannot be null")
     @NotEmpty(message = "Url cannot be empty")
     private String songUrl;
+
+    @NotNull(message = "Album name cannot be null")
+    @NotEmpty(message = "Album name cannot be empty")
+    private String albumName;
+
 
 }

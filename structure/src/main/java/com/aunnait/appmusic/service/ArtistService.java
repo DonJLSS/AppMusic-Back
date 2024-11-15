@@ -6,16 +6,15 @@ import com.aunnait.appmusic.model.dto.AlbumDTO;
 import com.aunnait.appmusic.model.dto.ArtistDTO;
 import com.aunnait.appmusic.model.mapper.AlbumMapper;
 import com.aunnait.appmusic.model.mapper.ArtistMapper;
-import com.aunnait.appmusic.repository.AlbumRepository;
 import com.aunnait.appmusic.repository.ArtistRepository;
 import com.aunnait.appmusic.exceptions.EntityNotFoundException;
+import com.aunnait.appmusic.utils.AlbumOperations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import com.aunnait.appmusic.utils.ArtistSpecification;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,9 +27,10 @@ public class ArtistService implements IArtistService{
     @Autowired
     ArtistMapper mapper;
     @Autowired
-    private AlbumMapper albumMapper;
+    AlbumMapper albumMapper;
     @Autowired
-    private AlbumRepository albumRepository;
+    AlbumOperations albumOperations;
+
 
     @Override
     public List<ArtistDTO> findAll() {
@@ -92,10 +92,9 @@ public class ArtistService implements IArtistService{
         if(!albumDTO.getArtistName().equals(artist.getName()))
             throw new IllegalArgumentException("Artist name: "+ albumDTO.getArtistName()+
                     " not matching id: "+ artistId);
-        Album album = albumMapper.convertToEntity(albumDTO);
-        Album existing = albumRepository.findById(album.getId())
-                .orElseGet(()->albumRepository.save(album));
-        artist.getAlbums().add(existing);
+        AlbumDTO existing = albumOperations.addAlbum(albumDTO);
+        Album savedAlbum = albumMapper.convertToEntity(existing);
+        artist.getAlbums().add(savedAlbum);
         Artist updatedArtist = repository.save(artist);
         return mapper.convertToDTO(updatedArtist);
 

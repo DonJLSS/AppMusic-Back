@@ -8,10 +8,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AlbumSpecification {
-    public static Specification<Album> getArtistByAttributes(String title, Integer launchYear,
-                                                             Integer songsCount, String coverUrl, String artistName){
+    public static Specification<Album> getAlbumByAttributes(String title, Integer launchYear,
+                                                            Integer songsCount, String coverUrl, String artistName) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
+
             if (title != null && !title.isEmpty()) {
                 predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("title")), "%" + title.toLowerCase() + "%"));
             }
@@ -25,8 +26,9 @@ public class AlbumSpecification {
                 predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("coverUrl")), "%" + coverUrl.toLowerCase() + "%"));
             }
             if (artistName != null && !artistName.isEmpty()) {
-                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("artistName")), "%" + artistName.toLowerCase() + "%"));
+                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("artist").get("name")), "%" + artistName.toLowerCase() + "%"));
             }
+
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
     }

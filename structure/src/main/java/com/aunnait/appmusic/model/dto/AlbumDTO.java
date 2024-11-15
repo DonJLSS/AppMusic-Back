@@ -3,7 +3,6 @@ package com.aunnait.appmusic.model.dto;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,9 +25,7 @@ public class AlbumDTO {
     @NotEmpty(message = "Description cannot be empty")
     private String description;
 
-    @NotNull(message = "Songs count cannot be null")
-    @Positive(message = "Songs count must be a positive number")
-    private Integer songsCount;
+    private Integer songsCount=0;
 
     @NotNull(message = "Artist name cannot be null")
     @NotEmpty(message = "Artist name cannot be empty")

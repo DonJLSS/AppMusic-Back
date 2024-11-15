@@ -1,10 +1,14 @@
 package com.aunnait.appmusic.rest;
 
+import com.aunnait.appmusic.model.Album;
 import com.aunnait.appmusic.model.dto.AlbumDTO;
 import com.aunnait.appmusic.model.dto.ArtistDTO;
 import com.aunnait.appmusic.service.IAlbumService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -61,6 +65,15 @@ public class AlbumController {
             @RequestParam(required = false) String artistName){
         return new ResponseEntity<>(albumService.findAllAlbumByAttributes(title, launchYear, songsCount, coverUrl, artistName),
                 HttpStatus.OK);
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<Page<AlbumDTO>> getAllAlbumsPaginated(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<AlbumDTO> albumsPage = albumService.findAllPaginated(pageable);
+        return ResponseEntity.ok(albumsPage);
     }
 
 }
