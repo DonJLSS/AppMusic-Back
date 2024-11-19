@@ -1,8 +1,7 @@
 package com.aunnait.appmusic.rest;
 
-import com.aunnait.appmusic.model.dto.AlbumDTO;
 import com.aunnait.appmusic.model.dto.SongDTO;
-import com.aunnait.appmusic.repository.SongRepository;
+import com.aunnait.appmusic.model.dto.SongResponseDTO;
 import com.aunnait.appmusic.service.ISongService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,13 +27,13 @@ public class SongController {
     }
 
     @GetMapping
-    public ResponseEntity<List<SongDTO>> findAll(){
-        List<SongDTO> songs = songService.findAll();
+    public ResponseEntity<List<SongResponseDTO>> findAll(){
+        List<SongResponseDTO> songs = songService.findAll();
         return new ResponseEntity<>(songs, HttpStatus.OK);
     }
     @GetMapping("/{id}")
-    public ResponseEntity<SongDTO> getSongById(@PathVariable Integer id){
-        SongDTO songDTO = songService.findSongById(id);
+    public ResponseEntity<SongResponseDTO> getSongById(@PathVariable Integer id){
+        SongResponseDTO songDTO = songService.findSongById(id);
         return ResponseEntity.ok(songDTO);
     }
 
@@ -72,6 +71,21 @@ public class SongController {
         Pageable pageable = PageRequest.of(page, size);
         Page<SongDTO> songsPage = songService.findAllPaginated(pageable);
         return ResponseEntity.ok(songsPage);
+    }
+
+    //--------------------------------------------------Genre-related operations--------------------------------------------------------
+    @PutMapping("/{songId}/genres")
+    public ResponseEntity<SongResponseDTO> addGenresToSong(@PathVariable Integer songId,
+                                                   @RequestBody List<String> genres){
+        SongResponseDTO updatedSong = songService.addGenresToSong(songId,genres);
+        return ResponseEntity.ok(updatedSong);
+    }
+
+    @PutMapping("/{songId}/genres/remove")
+    public ResponseEntity<SongResponseDTO> removeSongGenres(@PathVariable Integer songId,
+                                                    @RequestBody List<String> genres){
+        SongResponseDTO updatedSong = songService.removeGenresFromSong(songId,genres);
+        return ResponseEntity.ok(updatedSong);
     }
 
 }

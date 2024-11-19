@@ -15,4 +15,8 @@ public class GenreDTO {
     @NotNull(message = "Genre name cannot be null")
     @NotEmpty(message = "Genre name cannot be empty")
     private String name;
+    private String description;
+    @NotNull(message = "Year cannot be null")
+    @NotEmpty(message = "Year cannot be empty")
+    private Integer yearOfOrigin;
 }

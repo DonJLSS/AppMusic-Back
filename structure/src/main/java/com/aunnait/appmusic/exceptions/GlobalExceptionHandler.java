@@ -9,9 +9,8 @@ import org.springframework.web.context.request.WebRequest;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    // Artist exception
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<String> handleInvalidArtistDataException(EntityNotFoundException ex, WebRequest request) {
+    public ResponseEntity<String> handleInvalidDataException(EntityNotFoundException ex, WebRequest request) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 

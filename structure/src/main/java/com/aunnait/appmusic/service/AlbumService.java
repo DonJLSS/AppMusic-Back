@@ -1,9 +1,7 @@
 package com.aunnait.appmusic.service;
 
 import com.aunnait.appmusic.model.Album;
-import com.aunnait.appmusic.model.Song;
 import com.aunnait.appmusic.model.dto.AlbumDTO;
-import com.aunnait.appmusic.model.dto.SongDTO;
 import com.aunnait.appmusic.model.mapper.AlbumMapper;
 import com.aunnait.appmusic.model.mapper.SongMapper;
 import com.aunnait.appmusic.repository.AlbumRepository;
@@ -83,31 +81,6 @@ public class AlbumService implements IAlbumService {
         albumRepository.delete(albumToDelete);
     }
 
-    //Add a song to an existing album
-    @Override
-    public AlbumDTO addSong(Integer id, SongDTO songDTO) {
-        Album album = albumRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Album: "+ id +" not found"));
-        if(!songDTO.getAlbumName().equals(album.getTitle()))
-            throw new IllegalArgumentException("Album title: "+ songDTO.getAlbumName()+
-                    " not matching id: "+ id);
-        SongDTO existing = songOperations.addSong(songDTO);
-        Song savedSong = songMapper.convertToEntity(existing,album);
-        album.getSongs().add(savedSong);
-        Album updatedAlbum = albumRepository.save(album);
-        return albumMapper.toAlbumDTO(updatedAlbum);    }
-
-
-    //Song removal from list (doesn't delete the song from database)
-    @Override
-    public AlbumDTO removeSong(Integer id, SongDTO songDTO) {
-        Album album = albumRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Album: "+ id +" not found"));
-        Song song = songMapper.convertToEntity(songDTO, album);
-        album.getSongs().remove(song);
-        Album updatedAlbum = albumRepository.save(album);
-        return albumMapper.toAlbumDTO(updatedAlbum);
-    }
 
 
     @Override
@@ -130,8 +103,6 @@ public class AlbumService implements IAlbumService {
     private void ErrorHandler(AlbumDTO albumDTO) {
         if(albumDTO.getTitle() == null || albumDTO.getTitle().isEmpty())
             throw new IllegalArgumentException("Title can not be empty");
-        if (albumDTO.getSongsCount() == null || albumDTO.getSongsCount() < 1)
-            throw new IllegalArgumentException("Songs count can not be empty");
         if (albumDTO.getLaunchYear() == null)
             throw new IllegalArgumentException("Launch year can not be empty");
         if(artistService.findAllArtistByAttributes(

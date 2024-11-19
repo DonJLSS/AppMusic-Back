@@ -14,8 +14,6 @@ public interface IAlbumService extends AlbumOperations {
     AlbumDTO updateAlbum(Integer id, AlbumDTO albumDTO);
     AlbumDTO addAlbum(AlbumDTO albumDTO);
     void deleteAlbum(Integer id);
-    AlbumDTO addSong(Integer id, SongDTO songDTO);
-    AlbumDTO removeSong(Integer id, SongDTO songDTO);
     List<AlbumDTO> findAllAlbumByAttributes(String title, Integer launchYear,
                                             Integer songsCount, String coverUrl, String artistName);
     Page<AlbumDTO> findAllPaginated(Pageable pageable);
