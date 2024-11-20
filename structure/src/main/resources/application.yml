@@ -2,6 +2,23 @@ spring:
   application:
     name: appmusic
 
+  datasource:
+    url: jdbc:mariadb://localhost:3306/appmusic
+    username: root
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MariaDBDialect
+
+  sql:
+    init:
+      mode: always
+
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
