@@ -1,7 +1,6 @@
 package com.aunnait.appmusic.service;
 
 
-import com.aunnait.appmusic.model.dto.AlbumDTO;
 import com.aunnait.appmusic.model.dto.GenreDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

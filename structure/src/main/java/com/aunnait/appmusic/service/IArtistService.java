@@ -1,6 +1,5 @@
 package com.aunnait.appmusic.service;
 
-import com.aunnait.appmusic.model.Artist;
 import com.aunnait.appmusic.model.dto.AlbumDTO;
 import com.aunnait.appmusic.model.dto.ArtistDTO;
 import org.springframework.data.domain.Page;
