@@ -12,6 +12,9 @@ public class ArtistMapper {
     }
 
     public Artist convertToEntity(ArtistDTO artistDTO) {
+        if (artistDTO == null) {
+            throw new IllegalArgumentException("ArtistDTO cannot be null");
+        }
         Artist artist = new Artist();
         artist.setId(artistDTO.getId());
         artist.setName(artistDTO.getName());

@@ -32,10 +32,12 @@ public class SongDTO {
     @Schema(description = "URL of the song", example = "https://youtu.be/fsccjsW8bSY")
     private String songUrl;
 
-    @NotNull(message = "Album name cannot be null")
-    @NotEmpty(message = "Album name cannot be empty")
     @Schema(description = "Name of the album the song belongs to", example = "Speaking Tongues")
     private String albumName;
+
+    @NotNull(message = "Artist name cannot be null")
+    @NotEmpty(message = "Artist name cannot be empty")
+    private String artistName;
 
 
 }

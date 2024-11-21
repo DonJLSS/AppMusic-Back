@@ -1,6 +1,7 @@
 package com.aunnait.appmusic.model.mapper;
 
 import com.aunnait.appmusic.model.Album;
+import com.aunnait.appmusic.model.Artist;
 import com.aunnait.appmusic.model.Song;
 import com.aunnait.appmusic.model.Genre;
 
@@ -22,17 +23,23 @@ public class SongMapper {
         songDTO.setTitle(song.getTitle());
         songDTO.setSongUrl(song.getSongUrl());
         songDTO.setDuration(song.getDuration());
-        songDTO.setAlbumName(song.getAlbum().getTitle());
+        if (song.getAlbum() != null) {
+            songDTO.setAlbumName(song.getAlbum().getTitle());
+        } else {
+            songDTO.setAlbumName(null);
+        }
+        songDTO.setArtistName(song.getArtist().getName());
         return songDTO;
     }
 
-    public Song convertToEntity(SongDTO songDTO, Album album) {
+    public Song convertToEntity(SongDTO songDTO, Album album, Artist artist) {
         Song song = new Song();
         song.setId(songDTO.getId());
         song.setTitle(songDTO.getTitle());
         song.setSongUrl(songDTO.getSongUrl());
         song.setDuration(songDTO.getDuration());
         song.setAlbum(album);
+        song.setArtist(artist);
         return song;
     }
 
@@ -42,7 +49,12 @@ public class SongMapper {
         responseDTO.setTitle(song.getTitle());
         responseDTO.setSongUrl(song.getSongUrl());
         responseDTO.setDuration(song.getDuration());
-        responseDTO.setAlbumName(song.getAlbum().getTitle());
+        if (song.getAlbum() != null) {
+            responseDTO.setAlbumName(song.getAlbum().getTitle());
+        } else {
+            responseDTO.setAlbumName(null);
+        }
+        responseDTO.setArtistName(song.getArtist().getName());
 
         Set<String> genreNames = song.getGenres().stream()
                 .map(Genre::getName)

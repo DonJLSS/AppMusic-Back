@@ -2,15 +2,15 @@ package com.aunnait.appmusic.service;
 
 import com.aunnait.appmusic.exceptions.EntityNotFoundException;
 import com.aunnait.appmusic.model.Album;
+import com.aunnait.appmusic.model.Artist;
 import com.aunnait.appmusic.model.Genre;
 import com.aunnait.appmusic.model.Song;
-import com.aunnait.appmusic.model.dto.AlbumDTO;
-import com.aunnait.appmusic.model.dto.GenreDTO;
-import com.aunnait.appmusic.model.dto.SongDTO;
-import com.aunnait.appmusic.model.dto.SongResponseDTO;
+import com.aunnait.appmusic.model.dto.*;
 import com.aunnait.appmusic.model.mapper.AlbumMapper;
+import com.aunnait.appmusic.model.mapper.ArtistMapper;
 import com.aunnait.appmusic.model.mapper.GenreMapper;
 import com.aunnait.appmusic.model.mapper.SongMapper;
+import com.aunnait.appmusic.repository.ArtistRepository;
 import com.aunnait.appmusic.repository.SongRepository;
 import com.aunnait.appmusic.utils.SongSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +35,10 @@ public class SongService implements ISongService {
 
     @Autowired
     SongMapper songMapper;
+
+    @Autowired
+    ArtistMapper artistMapper;
+
     @Lazy
     @Autowired
     AlbumService albumService;
@@ -44,6 +48,12 @@ public class SongService implements ISongService {
     private GenreMapper genreMapper;
     @Autowired
     private GenreService genreService;
+
+    @Lazy
+    @Autowired
+    ArtistService artistService;
+    @Autowired
+    private ArtistRepository artistRepository;
 
     @Override
     public List<SongResponseDTO> findAll() {
@@ -70,19 +80,44 @@ public class SongService implements ISongService {
     @Override
     public SongDTO addSong(SongDTO songDTO) {
         ErrorHandler(songDTO);
-        Optional<AlbumDTO> albumDTOOptional = albumService.findAllAlbumByAttributes(songDTO.getAlbumName(),
-                        null, null,
-                        null, null)
+
+        if (songDTO.getArtistName() == null || songDTO.getArtistName().isEmpty()) {
+            throw new IllegalArgumentException("Artist name cannot be null or empty");
+        }
+
+        Optional<ArtistDTO> artist = artistService.findAllArtistByAttributes(songDTO.getArtistName(), null, null)
                 .stream()
                 .findFirst();
-        if(albumDTOOptional.isPresent()){
-            Album album = albumMapper.convertToEntity(albumDTOOptional.get());
 
-            Song newSong = songMapper.convertToEntity(songDTO, album);
-            Song saved = songRepository.save(newSong);
-            return songMapper.convertToDTO(saved);
+        if (!artist.isPresent()) {
+            throw new EntityNotFoundException("Artist: " + songDTO.getArtistName() + " not found");
         }
-        else throw new EntityNotFoundException("Album: "+songDTO.getAlbumName()+" not found");
+
+        ArtistDTO foundArtist = artist.get();
+        if (foundArtist.getName() == null || foundArtist.getNationality() == null) {
+            throw new IllegalStateException("Artist data is incomplete: " + foundArtist);
+        }
+
+        Artist mapped = artistMapper.convertToEntity(foundArtist);
+
+        Album album = null;
+        if (songDTO.getAlbumName() != null && !songDTO.getAlbumName().isEmpty()) {
+            Optional<AlbumDTO> albumDTOOptional = albumService.findAllAlbumByAttributes(
+                    songDTO.getAlbumName(), null, null, null, null
+            ).stream().findFirst();
+
+            if (albumDTOOptional.isPresent()) {
+                album = albumMapper.convertToEntity(albumDTOOptional.get());
+            } else {
+                throw new EntityNotFoundException("Album: " + songDTO.getAlbumName() + " not found");
+            }
+        }
+
+
+        Song newSong = songMapper.convertToEntity(songDTO, album, mapped);
+        Song saved = songRepository.save(newSong);
+
+        return songMapper.convertToDTO(saved);
     }
 
     @Override
@@ -94,8 +129,8 @@ public class SongService implements ISongService {
 
 
     @Override
-    public List<SongDTO> findAllAlbumByAttributes(String title, Duration duration, String songUrl) {
-        Specification<Song> spec = SongSpecification.getArtistByAttributes(title, duration, songUrl);
+    public List<SongDTO> findAllSongByAttributes(String title, Duration duration, String songUrl) {
+        Specification<Song> spec = SongSpecification.getSongByAttributes(title, duration, songUrl);
         return songRepository.findAll(spec).stream()
                 .map(songMapper::convertToDTO)
                 .collect(Collectors.toList());

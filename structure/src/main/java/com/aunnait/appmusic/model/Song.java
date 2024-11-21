@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -12,6 +13,7 @@ import java.util.Set;
 @Entity
 @Table(name = "songs")
 @Data   //Lombok autogenerate getters/setters/toString/hash
+@ToString(exclude = "artist") //Avoids StackOverflow errors
 @AllArgsConstructor
 @NoArgsConstructor
 public class Song {
@@ -22,15 +24,19 @@ public class Song {
     private Long duration; //Changed to long bc persistence
     //Foreign key
     @ManyToOne
-    @JoinColumn(name = "album_id", nullable = false)
+    @JoinColumn(name = "albumId", nullable = true)
     private Album album;
     private String songUrl;
+
+    @ManyToOne
+    @JoinColumn(name = "artistId", nullable = false)
+    private Artist artist;
 
     @ManyToMany
     @JoinTable(
             name = "song_genre",
-            joinColumns = @JoinColumn(name = "song_id"),
-            inverseJoinColumns = @JoinColumn(name = "genre_id")
+            joinColumns = @JoinColumn(name = "songId"),
+            inverseJoinColumns = @JoinColumn(name = "genreId")
     )
     private Set<Genre> genres = new HashSet<>();
 }

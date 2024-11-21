@@ -90,7 +90,7 @@ public class SongController {
             @RequestParam(required = false) String title,
             @RequestParam(required = false)Duration duration,
             @RequestParam(required = false) String songUrl){
-        return new ResponseEntity<>(songService.findAllAlbumByAttributes(title,duration,songUrl), HttpStatus.OK);
+        return new ResponseEntity<>(songService.findAllSongByAttributes(title,duration,songUrl), HttpStatus.OK);
     }
 
     @Operation(description = "Returns all Song as paginated resources")

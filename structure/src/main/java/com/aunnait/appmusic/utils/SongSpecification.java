@@ -10,7 +10,7 @@ import java.util.List;
 
 public class SongSpecification {
 
-    public static Specification<Song> getArtistByAttributes(String title, Duration duration, String songUrl){
+    public static Specification<Song> getSongByAttributes(String title, Duration duration, String songUrl){
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
             if (title != null && !title.isEmpty()) {
