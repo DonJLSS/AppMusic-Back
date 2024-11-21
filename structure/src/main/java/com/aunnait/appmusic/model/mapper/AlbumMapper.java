@@ -4,6 +4,7 @@ import com.aunnait.appmusic.exceptions.EntityNotFoundException;
 import com.aunnait.appmusic.model.Album;
 import com.aunnait.appmusic.model.Artist;
 import com.aunnait.appmusic.model.dto.AlbumDTO;
+import com.aunnait.appmusic.model.dto.AlbumRequestDTO;
 import com.aunnait.appmusic.model.dto.ArtistDTO;
 import com.aunnait.appmusic.service.ArtistService;
 import org.springframework.context.annotation.Lazy;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@SuppressWarnings("DuplicatedCode")
 @Component
 public class AlbumMapper {
 
@@ -31,6 +33,28 @@ public class AlbumMapper {
         albumDTO.setLaunchYear(album.getLaunchYear());
         albumDTO.setArtistName(album.getArtist().getName());
         return albumDTO;
+    }
+
+    public Album fromRequestToEntity(AlbumRequestDTO albumRequestDTO) {
+        Album album = new Album();
+        album.setId(albumRequestDTO.getId());
+        album.setDescription(albumRequestDTO.getDescription());
+        album.setTitle(albumRequestDTO.getTitle());
+        album.setLaunchYear(albumRequestDTO.getLaunchYear());
+
+        if (albumRequestDTO.getArtistName() != null && !albumRequestDTO.getArtistName().isEmpty()) {
+            List<ArtistDTO> artistsDTO = artistService.findAllArtistByAttributes(albumRequestDTO.getArtistName(), null, null);
+
+            Artist artist = artistsDTO.stream()
+                    .map(artistMapper::convertToEntity)
+                    .findFirst()
+                    .orElseThrow(() -> new EntityNotFoundException("Artist with name " + albumRequestDTO.getArtistName() + " not found"));
+
+            album.setArtist(artist);
+        }
+
+        return album;
+
     }
 
     public Album convertToEntity(AlbumDTO albumDTO) {

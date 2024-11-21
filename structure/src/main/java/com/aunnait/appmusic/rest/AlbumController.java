@@ -1,6 +1,7 @@
 package com.aunnait.appmusic.rest;
 
 import com.aunnait.appmusic.model.dto.AlbumDTO;
+import com.aunnait.appmusic.model.dto.AlbumRequestDTO;
 import com.aunnait.appmusic.service.IAlbumService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -57,7 +58,7 @@ public class AlbumController {
             @ApiResponse(responseCode = "404",description = "Not found")})
     @PutMapping("/{id}")
     public ResponseEntity<AlbumDTO> updateAlbum(@PathVariable Integer id,
-                                                @Valid @RequestBody AlbumDTO albumDTO) {
+                                                @Valid @RequestBody AlbumRequestDTO albumDTO) {
         AlbumDTO updatedAlbum = albumService.updateAlbum(id, albumDTO);
         return ResponseEntity.ok(updatedAlbum);
     }
@@ -66,8 +67,8 @@ public class AlbumController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
             @ApiResponse(responseCode = "500", description = "Internal Server Error")})
     @PostMapping("/add")
-    public ResponseEntity<AlbumDTO> addAlbum(@Valid @RequestBody AlbumDTO albumDTO) {
-        AlbumDTO addedAlbum = albumService.addAlbum(albumDTO);
+    public ResponseEntity<AlbumDTO> addAlbum(@Valid @RequestBody AlbumRequestDTO albumRequestDTO) {
+        AlbumDTO addedAlbum = albumService.addAlbum(albumRequestDTO);
         return ResponseEntity.ok(addedAlbum);
     }
 

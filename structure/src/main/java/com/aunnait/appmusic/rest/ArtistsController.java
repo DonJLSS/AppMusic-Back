@@ -1,7 +1,9 @@
 package com.aunnait.appmusic.rest;
 
 import com.aunnait.appmusic.model.dto.AlbumDTO;
+import com.aunnait.appmusic.model.dto.AlbumRequestDTO;
 import com.aunnait.appmusic.model.dto.ArtistDTO;
+import com.aunnait.appmusic.model.dto.ArtistRequestDTO;
 import com.aunnait.appmusic.service.IArtistService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -59,7 +61,7 @@ public class ArtistsController {
             @ApiResponse(responseCode = "404",description = "Not found")})
     @PutMapping("/{id}")
     public ResponseEntity<ArtistDTO> updateArtist(@PathVariable Integer id,
-                                                  @Valid @RequestBody ArtistDTO artistDTO) {
+                                                  @Valid @RequestBody ArtistRequestDTO artistDTO) {
         ArtistDTO updatedArtistDTO = artistService.updateArtist(id, artistDTO);
         return ResponseEntity.ok(updatedArtistDTO);
     }
@@ -68,7 +70,7 @@ public class ArtistsController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
             @ApiResponse(responseCode = "500", description = "Internal Server Error")})
     @PostMapping("/add")
-    public ResponseEntity<ArtistDTO> addArtist(@Valid @RequestBody ArtistDTO artistDTO) {
+    public ResponseEntity<ArtistDTO> addArtist(@Valid @RequestBody ArtistRequestDTO artistDTO) {
         ArtistDTO addedArtistDTO = artistService.addArtist(artistDTO);
         return ResponseEntity.ok(addedArtistDTO);
     }
@@ -90,7 +92,7 @@ public class ArtistsController {
     @PutMapping("/{artistId}/albums")
     public ResponseEntity<ArtistDTO> addAlbumToArtist(
             @PathVariable Integer artistId,
-            @RequestBody AlbumDTO albumDTO) {
+            @RequestBody AlbumRequestDTO albumDTO) {
 
         ArtistDTO updatedArtist = artistService.addAlbum(artistId, albumDTO);
         return ResponseEntity.ok(updatedArtist);

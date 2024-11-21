@@ -3,7 +3,9 @@ package com.aunnait.appmusic.service;
 import com.aunnait.appmusic.model.Album;
 import com.aunnait.appmusic.model.Artist;
 import com.aunnait.appmusic.model.dto.AlbumDTO;
+import com.aunnait.appmusic.model.dto.AlbumRequestDTO;
 import com.aunnait.appmusic.model.dto.ArtistDTO;
+import com.aunnait.appmusic.model.dto.ArtistRequestDTO;
 import com.aunnait.appmusic.model.mapper.AlbumMapper;
 import com.aunnait.appmusic.model.mapper.ArtistMapper;
 import com.aunnait.appmusic.repository.ArtistRepository;
@@ -49,7 +51,7 @@ public class ArtistService implements IArtistService{
     }
 
     @Override
-    public ArtistDTO updateArtist(Integer id, ArtistDTO artistDTO) {
+    public ArtistDTO updateArtist(Integer id, ArtistRequestDTO artistDTO) {
         Artist artistToUpdate = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Artist: "+ id +" not found"));
         ErrorHandler(artistDTO);
@@ -67,13 +69,13 @@ public class ArtistService implements IArtistService{
 
 
     @Override
-    public ArtistDTO addArtist(ArtistDTO artistDTO) {
+    public ArtistDTO addArtist(ArtistRequestDTO artistDTO) {
         ErrorHandler(artistDTO);
         //Unique name on artists
         if(findAllArtistByAttributes(artistDTO.getName(),null,null).stream()
                 .anyMatch(a->a.getName().equals(artistDTO.getName())))
             throw new IllegalArgumentException("Name: "+ artistDTO.getName() +" already in use");
-        Artist newArtist = mapper.convertToEntity(artistDTO);
+        Artist newArtist = mapper.fromRequestToArtist(artistDTO);
         Artist savedArtist = repository.save(newArtist);
         return mapper.convertToDTO(savedArtist);
     }
@@ -86,7 +88,7 @@ public class ArtistService implements IArtistService{
     }
 
     //Add an album to an existing artist
-    public ArtistDTO addAlbum(Integer artistId, AlbumDTO albumDTO){
+    public ArtistDTO addAlbum(Integer artistId, AlbumRequestDTO albumDTO){
         Artist artist = repository.findById(artistId)
                 .orElseThrow(() -> new EntityNotFoundException("Artist: "+ artistId +" not found"));
         if(!albumDTO.getArtistName().equals(artist.getName()))
@@ -127,7 +129,7 @@ public class ArtistService implements IArtistService{
 
 
     //Argument error handling
-    private void ErrorHandler(ArtistDTO artistDTO) {
+    private void ErrorHandler(ArtistRequestDTO artistDTO) {
         if(artistDTO.getName() == null || artistDTO.getName().isEmpty()) {
             throw new IllegalArgumentException("Name cannot be empty");
         }

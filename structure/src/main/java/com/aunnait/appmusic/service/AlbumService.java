@@ -2,6 +2,7 @@ package com.aunnait.appmusic.service;
 
 import com.aunnait.appmusic.model.Album;
 import com.aunnait.appmusic.model.dto.AlbumDTO;
+import com.aunnait.appmusic.model.dto.AlbumRequestDTO;
 import com.aunnait.appmusic.model.mapper.AlbumMapper;
 import com.aunnait.appmusic.model.mapper.SongMapper;
 import com.aunnait.appmusic.repository.AlbumRepository;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("DuplicatedCode")
 @Service
 public class AlbumService implements IAlbumService {
 
@@ -49,11 +51,10 @@ public class AlbumService implements IAlbumService {
     }
 
     @Override
-    public AlbumDTO updateAlbum(Integer id, AlbumDTO albumDTO) {
+    public AlbumDTO updateAlbum(Integer id, AlbumRequestDTO albumDTO) {
         Album album = albumRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Album: "+ id +" not found"));
         ErrorHandler(albumDTO);
-        album.setSongsCount(albumDTO.getSongsCount());
         album.setTitle(albumDTO.getTitle());
         album.setDescription(albumDTO.getDescription());
         album.setLaunchYear(albumDTO.getLaunchYear());
@@ -62,14 +63,14 @@ public class AlbumService implements IAlbumService {
     }
 
     @Override
-    public AlbumDTO addAlbum(AlbumDTO albumDTO) {
+    public AlbumDTO addAlbum(AlbumRequestDTO albumDTO) {
         ErrorHandler(albumDTO);
         //Unique album title
         if(findAllAlbumByAttributes(albumDTO.getTitle(),null,null,null,
                 null).stream()
                 .anyMatch(a->a.getTitle().equals(albumDTO.getTitle())))
             throw new IllegalArgumentException("Album: "+ albumDTO.getTitle() +" already exists");
-        Album newAlbum = albumMapper.convertToEntity(albumDTO);
+        Album newAlbum = albumMapper.fromRequestToEntity(albumDTO);
         Album saved = albumRepository.save(newAlbum);
         return albumMapper.toAlbumDTO(saved);
     }
@@ -100,7 +101,7 @@ public class AlbumService implements IAlbumService {
 
 
     //Argument error handling
-    private void ErrorHandler(AlbumDTO albumDTO) {
+    private void ErrorHandler(AlbumRequestDTO albumDTO) {
         if(albumDTO.getTitle() == null || albumDTO.getTitle().isEmpty())
             throw new IllegalArgumentException("Title can not be empty");
         if (albumDTO.getLaunchYear() == null)
