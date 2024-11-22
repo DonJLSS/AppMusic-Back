@@ -23,6 +23,10 @@ spring:
     user:
       name: admin
       password: admin
+
+  banner:
+    location: banner.txt
+
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
