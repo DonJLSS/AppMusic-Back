@@ -19,6 +19,10 @@ spring:
     init:
       mode: always
 
+  security:
+    user:
+      name: admin
+      password: admin
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
