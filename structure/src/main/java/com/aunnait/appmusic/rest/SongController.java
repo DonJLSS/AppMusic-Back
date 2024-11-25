@@ -66,7 +66,7 @@ public class SongController {
     @PostMapping()
     public ResponseEntity<SongDTO> addSong(@RequestBody SongDTO songDTO){
         SongDTO song = songService.addSong(songDTO);
-        return ResponseEntity.ok(song);
+        return ResponseEntity.status(HttpStatus.CREATED).body(song);
     }
 
     @Operation(description = "Updates any attribute of the Song given")

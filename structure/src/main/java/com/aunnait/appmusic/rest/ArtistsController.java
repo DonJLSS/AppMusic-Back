@@ -64,12 +64,14 @@ public class ArtistsController {
     }
 
     @Operation(description = "Creates an Artist")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error")})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Artist created successfully"),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error")
+    })
     @PostMapping()
     public ResponseEntity<ArtistDTO> addArtist(@Valid @RequestBody ArtistRequestDTO artistDTO) {
         ArtistDTO addedArtistDTO = artistService.addArtist(artistDTO);
-        return ResponseEntity.ok(addedArtistDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(addedArtistDTO);
     }
 
     @Operation(description = "Updates any attribute of the Artist given")

@@ -64,7 +64,7 @@ public class GenreController {
     @PostMapping()
     public ResponseEntity<GenreDTO> addGenre(@Valid @RequestBody GenreDTO genreDTO){
         GenreDTO genreDTOAdded = genreService.addGenre(genreDTO);
-        return ResponseEntity.ok(genreDTOAdded);
+        return ResponseEntity.status(HttpStatus.CREATED).body(genreDTOAdded);
     }
 
     @Operation(description = "Updates any attribute of the Genre given")

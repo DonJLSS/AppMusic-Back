@@ -26,12 +26,10 @@ import java.util.List;
 public class AlbumController {
 
     private final IAlbumService albumService;
-    private final HandlerMapping resourceHandlerMapping;
 
     @Autowired
-    public AlbumController(IAlbumService albumService, @Qualifier("resourceHandlerMapping") HandlerMapping resourceHandlerMapping) {
+    public AlbumController(IAlbumService albumService) {
         this.albumService = albumService;
-        this.resourceHandlerMapping = resourceHandlerMapping;
     }
 
     @Operation(description = "Return all Album bundled into Response")
@@ -70,7 +68,7 @@ public class AlbumController {
     @PostMapping()
     public ResponseEntity<AlbumDTO> addAlbum(@Valid @RequestBody AlbumRequestDTO albumRequestDTO) {
         AlbumDTO addedAlbum = albumService.addAlbum(albumRequestDTO);
-        return ResponseEntity.ok(addedAlbum);
+        return ResponseEntity.status(HttpStatus.CREATED).body(addedAlbum);
     }
 
     @PatchMapping("/{id}")
