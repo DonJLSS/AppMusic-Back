@@ -9,12 +9,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.HandlerMapping;
 
 import java.util.List;
 
@@ -27,10 +26,12 @@ import java.util.List;
 public class AlbumController {
 
     private final IAlbumService albumService;
+    private final HandlerMapping resourceHandlerMapping;
 
     @Autowired
-    public AlbumController(IAlbumService albumService) {
+    public AlbumController(IAlbumService albumService, @Qualifier("resourceHandlerMapping") HandlerMapping resourceHandlerMapping) {
         this.albumService = albumService;
+        this.resourceHandlerMapping = resourceHandlerMapping;
     }
 
     @Operation(description = "Return all Album bundled into Response")
@@ -66,10 +67,17 @@ public class AlbumController {
     @Operation(description = "Creates an Album")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
             @ApiResponse(responseCode = "500", description = "Internal Server Error")})
-    @PostMapping("/add")
+    @PostMapping()
     public ResponseEntity<AlbumDTO> addAlbum(@Valid @RequestBody AlbumRequestDTO albumRequestDTO) {
         AlbumDTO addedAlbum = albumService.addAlbum(albumRequestDTO);
         return ResponseEntity.ok(addedAlbum);
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<AlbumDTO> patchAlbum(@PathVariable Integer id,
+                                               @Valid @RequestBody AlbumRequestDTO albumDTO){
+        AlbumDTO updatedAlbum = albumService.partialUpdateAlbum(id,albumDTO);
+        return ResponseEntity.ok(updatedAlbum);
     }
 
     @Operation(description = "Deletes an Album given its id")
@@ -97,16 +105,5 @@ public class AlbumController {
                 HttpStatus.OK);
     }
 
-    @Operation(description = "Returns all Album as paginated resources")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error")})
-    @GetMapping("/all")
-    public ResponseEntity<Page<AlbumDTO>> getAllAlbumsPaginated(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<AlbumDTO> albumsPage = albumService.findAllPaginated(pageable);
-        return ResponseEntity.ok(albumsPage);
-    }
 
 }

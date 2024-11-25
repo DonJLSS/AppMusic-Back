@@ -12,8 +12,6 @@ import com.aunnait.appmusic.repository.ArtistRepository;
 import com.aunnait.appmusic.exceptions.EntityNotFoundException;
 import com.aunnait.appmusic.utils.AlbumOperations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import com.aunnait.appmusic.utils.ArtistSpecification;
@@ -22,7 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class ArtistService implements IArtistService{
+public class ArtistService implements IArtistService {
 
     @Autowired
     ArtistRepository repository;
@@ -32,33 +30,35 @@ public class ArtistService implements IArtistService{
     AlbumMapper albumMapper;
     @Autowired
     AlbumOperations albumOperations;
+    @Autowired
+    private ArtistRepository artistRepository;
+    @Autowired
+    private ArtistMapper artistMapper;
 
 
     @Override
     public List<ArtistDTO> findAll() {
         List<Artist> artists = repository.findAll();
         return artists.stream()
-                .map(a->mapper.convertToDTO(a))
+                .map(a -> mapper.convertToDTO(a))
                 .collect(Collectors.toList());
 
     }
 
     @Override
     public ArtistDTO findArtistById(Integer id) {
-        Artist artist = repository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Artist: "+ id +" not found"));
+        Artist artist = ErrorHandlerEntity(id);
         return mapper.convertToDTO(artist);
     }
 
     @Override
     public ArtistDTO updateArtist(Integer id, ArtistRequestDTO artistDTO) {
-        Artist artistToUpdate = repository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Artist: "+ id +" not found"));
+        Artist artistToUpdate = ErrorHandlerEntity(id);
         ErrorHandler(artistDTO);
         //Unique name on artists
-        if(findAllArtistByAttributes(artistDTO.getName(),null,null).stream()
-                        .anyMatch(a->a.getName().equals(artistDTO.getName())))
-            throw new IllegalArgumentException("Name: "+ artistDTO.getName() +" already in use");
+        if (findAllArtistByAttributes(artistDTO.getName(), null, null).stream()
+                .anyMatch(a -> a.getName().equals(artistDTO.getName())))
+            throw new IllegalArgumentException("Name: " + artistDTO.getName() + " already in use");
 
         artistToUpdate.setName(artistDTO.getName());
         artistToUpdate.setNationality(artistDTO.getNationality());
@@ -72,28 +72,42 @@ public class ArtistService implements IArtistService{
     public ArtistDTO addArtist(ArtistRequestDTO artistDTO) {
         ErrorHandler(artistDTO);
         //Unique name on artists
-        if(findAllArtistByAttributes(artistDTO.getName(),null,null).stream()
-                .anyMatch(a->a.getName().equals(artistDTO.getName())))
-            throw new IllegalArgumentException("Name: "+ artistDTO.getName() +" already in use");
+        if (findAllArtistByAttributes(artistDTO.getName(), null, null).stream()
+                .anyMatch(a -> a.getName().equals(artistDTO.getName())))
+            throw new IllegalArgumentException("Name: " + artistDTO.getName() + " already in use");
         Artist newArtist = mapper.fromRequestToArtist(artistDTO);
         Artist savedArtist = repository.save(newArtist);
         return mapper.convertToDTO(savedArtist);
     }
 
+
     @Override
     public void deleteArtist(Integer id) {
-        Artist artistToDelete = repository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Artist: "+ id +" not found"));
+        Artist artistToDelete = ErrorHandlerEntity(id);
         repository.delete(artistToDelete);
     }
 
+    @Override
+    public ArtistDTO partialUpdateArtist(Integer id, ArtistRequestDTO artistRequestDTO) {
+        Artist artist = ErrorHandlerEntity(id);
+        if (artistRequestDTO.getName()!=null && !artistRequestDTO.getName().isEmpty())
+            artist.setName(artistRequestDTO.getName());
+        if (artistRequestDTO.getNationality()!=null && !artistRequestDTO.getNationality().isEmpty())
+            artist.setNationality(artistRequestDTO.getNationality());
+        if (!artistRequestDTO.getDateOfBirth().isBefore(LocalDate.of(1900, 1, 1))
+                && !artistRequestDTO.getDateOfBirth().isAfter(LocalDate.now()))
+            artist.setDateOfBirth(artistRequestDTO.getDateOfBirth());
+        Artist savedArtist = artistRepository.save(artist);
+        return artistMapper.convertToDTO(savedArtist);
+
+    }
+
     //Add an album to an existing artist
-    public ArtistDTO addAlbum(Integer artistId, AlbumRequestDTO albumDTO){
-        Artist artist = repository.findById(artistId)
-                .orElseThrow(() -> new EntityNotFoundException("Artist: "+ artistId +" not found"));
-        if(!albumDTO.getArtistName().equals(artist.getName()))
-            throw new IllegalArgumentException("Artist name: "+ albumDTO.getArtistName()+
-                    " not matching id: "+ artistId);
+    public ArtistDTO addAlbum(Integer artistId, AlbumRequestDTO albumDTO) {
+        Artist artist = ErrorHandlerEntity(artistId);
+        if (!albumDTO.getArtistName().equals(artist.getName()))
+            throw new IllegalArgumentException("Artist name: " + albumDTO.getArtistName() +
+                    " not matching id: " + artistId);
         AlbumDTO existing = albumOperations.addAlbum(albumDTO);
         Album savedAlbum = albumMapper.convertToEntity(existing);
         artist.getAlbums().add(savedAlbum);
@@ -102,10 +116,11 @@ public class ArtistService implements IArtistService{
 
     }
 
+
+
     //Album removal from list (doesn't delete the album from database)
-    public ArtistDTO removeAlbum(Integer artistId, AlbumDTO albumDTO){
-        Artist artist = repository.findById(artistId)
-                .orElseThrow(() -> new EntityNotFoundException("Artist: "+ artistId +" not found"));
+    public ArtistDTO removeAlbum(Integer artistId, AlbumDTO albumDTO) {
+        Artist artist = ErrorHandlerEntity(artistId);
         Album album = albumMapper.convertToEntity(albumDTO);
         artist.getAlbums().remove(album);
         Artist updatedArtist = repository.save(artist);
@@ -116,25 +131,24 @@ public class ArtistService implements IArtistService{
     public List<ArtistDTO> findAllArtistByAttributes(String name, LocalDate dateOfBirth, String nationality) {
         Specification<Artist> spec = ArtistSpecification.getArtistByAttributes(name, dateOfBirth, nationality);
         return repository.findAll(spec).stream()
-                .map(a->mapper.convertToDTO(a))
+                .map(a -> mapper.convertToDTO(a))
                 .collect(Collectors.toList());
-    }
-
-
-    @Override
-    public Page<ArtistDTO> findAllPaginated(Pageable pageable) {
-        Page<Artist> artistsPage = repository.findAll(pageable);
-        return artistsPage.map(mapper::convertToDTO);
     }
 
 
     //Argument error handling
     private void ErrorHandler(ArtistRequestDTO artistDTO) {
-        if(artistDTO.getName() == null || artistDTO.getName().isEmpty()) {
+        if (artistDTO.getName() == null || artistDTO.getName().isEmpty()) {
             throw new IllegalArgumentException("Name cannot be empty");
         }
-        if(artistDTO.getNationality() == null || artistDTO.getNationality().isEmpty()) {
+        if (artistDTO.getNationality() == null || artistDTO.getNationality().isEmpty()) {
             throw new IllegalArgumentException("Nationality cannot be empty");
         }
+    }
+
+    private Artist ErrorHandlerEntity(Integer id) {
+        Artist artist = repository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Artist: " + id + " not found"));
+        return artist;
     }
 }

@@ -23,6 +23,7 @@ spring:
     user:
       name: admin
       password: admin
+      roles: ADMIN
 
   banner:
     location: banner.txt

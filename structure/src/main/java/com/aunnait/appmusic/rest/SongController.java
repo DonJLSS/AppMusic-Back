@@ -9,9 +9,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -66,10 +63,21 @@ public class SongController {
     @Operation(description = "Creates a Song")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
             @ApiResponse(responseCode = "500", description = "Internal Server Error")})
-    @PostMapping("/add")
+    @PostMapping()
     public ResponseEntity<SongDTO> addSong(@RequestBody SongDTO songDTO){
         SongDTO song = songService.addSong(songDTO);
         return ResponseEntity.ok(song);
+    }
+
+    @Operation(description = "Updates any attribute of the Song given")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error"),
+            @ApiResponse(responseCode = "404",description = "Not found")})
+    @PatchMapping("/{id}")
+    public ResponseEntity<SongResponseDTO> partialUpdateSong(@PathVariable Integer id,
+                                                             @Valid @RequestBody SongDTO songDTO){
+        SongResponseDTO updated = songService.partialUpdateSong(id,songDTO);
+        return ResponseEntity.ok(updated);
     }
 
     @Operation(description = "Deletes a Song given its id")
@@ -91,18 +99,6 @@ public class SongController {
             @RequestParam(required = false)Duration duration,
             @RequestParam(required = false) String songUrl){
         return new ResponseEntity<>(songService.findAllSongByAttributes(title,duration,songUrl), HttpStatus.OK);
-    }
-
-    @Operation(description = "Returns all Song as paginated resources")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error")})
-    @GetMapping("/all")
-    public ResponseEntity<Page<SongDTO>> findAllSongsPaginated(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size){
-        Pageable pageable = PageRequest.of(page, size);
-        Page<SongDTO> songsPage = songService.findAllPaginated(pageable);
-        return ResponseEntity.ok(songsPage);
     }
 
     //--------------------------------------------------Genre-related operations--------------------------------------------------------

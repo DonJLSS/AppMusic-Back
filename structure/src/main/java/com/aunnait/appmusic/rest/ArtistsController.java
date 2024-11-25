@@ -11,9 +11,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -69,10 +66,21 @@ public class ArtistsController {
     @Operation(description = "Creates an Artist")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
             @ApiResponse(responseCode = "500", description = "Internal Server Error")})
-    @PostMapping("/add")
+    @PostMapping()
     public ResponseEntity<ArtistDTO> addArtist(@Valid @RequestBody ArtistRequestDTO artistDTO) {
         ArtistDTO addedArtistDTO = artistService.addArtist(artistDTO);
         return ResponseEntity.ok(addedArtistDTO);
+    }
+
+    @Operation(description = "Updates any attribute of the Artist given")
+    @PatchMapping("/{id}")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error"),
+            @ApiResponse(responseCode = "404",description = "Not found")})
+    public ResponseEntity<ArtistDTO> patchArtist(@PathVariable Integer id,
+                                                 @Valid @RequestBody ArtistRequestDTO artistDTO){
+        ArtistDTO artistPatched = artistService.partialUpdateArtist(id, artistDTO);
+        return ResponseEntity.ok(artistPatched);
     }
 
     @Operation(description = "Deletes an Artist given its id")
@@ -122,18 +130,6 @@ public class ArtistsController {
             @RequestParam(required = false) String nationality){
         return new ResponseEntity<>(artistService.
                 findAllArtistByAttributes(name,dateOfBirth,nationality), HttpStatus.OK);
-    }
-
-    @Operation(description = "Returns all Artist as paginated resources")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error")})
-    @GetMapping("/all")
-    public ResponseEntity<Page<ArtistDTO>> getAllArtistsPaginated(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<ArtistDTO> artistsPage = artistService.findAllPaginated(pageable);
-        return ResponseEntity.ok(artistsPage);
     }
 
 

@@ -8,9 +8,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -64,10 +61,21 @@ public class GenreController {
     @Operation(description = "Creates a Genre")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
             @ApiResponse(responseCode = "500", description = "Internal Server Error")})
-    @PostMapping("/add")
+    @PostMapping()
     public ResponseEntity<GenreDTO> addGenre(@Valid @RequestBody GenreDTO genreDTO){
         GenreDTO genreDTOAdded = genreService.addGenre(genreDTO);
         return ResponseEntity.ok(genreDTOAdded);
+    }
+
+    @Operation(description = "Updates any attribute of the Genre given")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error"),
+            @ApiResponse(responseCode = "404",description = "Not found")})
+    @PatchMapping("/{id}")
+    public ResponseEntity<GenreDTO> patchGenre(@PathVariable Integer id,
+                                               @Valid @RequestBody GenreDTO genreDTO){
+        GenreDTO genreDTOUpdated = genreService.partialUpdateGenre(id, genreDTO);
+        return ResponseEntity.ok(genreDTOUpdated);
     }
 
     @Operation(description = "Deletes a Genre given its id")
@@ -90,19 +98,6 @@ public class GenreController {
             @RequestParam(required = false) String description){
         return new ResponseEntity<>(genreService.findAllGenreByAttributes(name, yearOfOrigin, description),
                 HttpStatus.OK);
-    }
-
-    @Operation(description = "Returns all Genre as paginated resources")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error")})
-    @GetMapping("/all")
-    public ResponseEntity<Page<GenreDTO>> getAllGenresPaginated(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size){
-        Pageable pageable = PageRequest.of(page, size);
-        Page<GenreDTO> genresPage = genreService.findAllPaginated(pageable);
-        return ResponseEntity.ok(genresPage);
-
     }
 
 }

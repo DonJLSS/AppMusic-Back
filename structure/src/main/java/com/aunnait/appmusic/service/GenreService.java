@@ -7,8 +7,7 @@ import com.aunnait.appmusic.model.mapper.GenreMapper;
 import com.aunnait.appmusic.repository.GenreRepository;
 import com.aunnait.appmusic.utils.GenreSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -34,15 +33,13 @@ public class GenreService implements IGenreService {
 
     @Override
     public GenreDTO findGenreById(Integer id) {
-        Genre genre = genreRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Genre: "+ id +" not found"));
+        Genre genre = ErrorHandlerEntity(id);
         return genreMapper.convertToDTO(genre);
     }
 
     @Override
     public GenreDTO updateGenre(Integer id, GenreDTO genreDTO) {
-        Genre genre = genreRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Genre: "+ id +" not found"));
+        Genre genre = ErrorHandlerEntity(id);
         ErrorHandler(genreDTO);
         genre.setName(genreDTO.getName());
         Genre updated = genreRepository.save(genre);
@@ -61,9 +58,23 @@ public class GenreService implements IGenreService {
     }
 
     @Override
+    public GenreDTO partialUpdateGenre(Integer id, GenreDTO genreDTO) {
+        Genre genre = ErrorHandlerEntity(id);
+        if(genreDTO.getName()!= null && !genreDTO.getName().isEmpty())
+            genre.setName(genreDTO.getName());
+        if (genreDTO.getDescription()!= null && !genreDTO.getDescription().isEmpty())
+            genre.setDescription(genreDTO.getDescription());
+        if (genreDTO.getYearOfOrigin()!=null && genreDTO.getYearOfOrigin()>=0)
+            genre.setYearOfOrigin(genreDTO.getYearOfOrigin());
+        Genre saved = genreRepository.save(genre);
+        return genreMapper.convertToDTO(saved);
+
+    }
+
+
+    @Override
     public void deleteGenre(Integer id) {
-        Genre genre = genreRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Genre: "+ id +" not found"));
+        Genre genre = ErrorHandlerEntity(id);
         genreRepository.delete(genre);
     }
 
@@ -75,10 +86,10 @@ public class GenreService implements IGenreService {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public Page<GenreDTO> findAllPaginated(Pageable pageable) {
-        Page<Genre> genresPage = genreRepository.findAll(pageable);
-        return genresPage.map(genreMapper::convertToDTO);
+    private Genre ErrorHandlerEntity(Integer id){
+        Genre genre = genreRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Genre: "+ id +" not found"));
+        return genre;
     }
 
     private void ErrorHandler(GenreDTO genreDTO) {
