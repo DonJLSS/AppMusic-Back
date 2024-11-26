@@ -6,6 +6,7 @@ import com.aunnait.appmusic.model.dto.AlbumDTO;
 import com.aunnait.appmusic.model.dto.AlbumRequestDTO;
 import com.aunnait.appmusic.model.dto.ArtistDTO;
 import com.aunnait.appmusic.model.dto.ArtistRequestDTO;
+import com.aunnait.appmusic.model.filters.ArtistSearchRequest;
 import com.aunnait.appmusic.model.mapper.AlbumMapper;
 import com.aunnait.appmusic.model.mapper.ArtistMapper;
 import com.aunnait.appmusic.repository.ArtistRepository;
@@ -117,7 +118,6 @@ public class ArtistService implements IArtistService {
     }
 
 
-
     //Album removal from list (doesn't delete the album from database)
     public ArtistDTO removeAlbum(Integer artistId, AlbumDTO albumDTO) {
         Artist artist = ErrorHandlerEntity(artistId);
@@ -129,10 +129,28 @@ public class ArtistService implements IArtistService {
 
     @Override
     public List<ArtistDTO> findAllArtistByAttributes(String name, LocalDate dateOfBirth, String nationality) {
-        Specification<Artist> spec = ArtistSpecification.getArtistByAttributes(name, dateOfBirth, nationality);
+        Specification<Artist> spec = ArtistSpecification.getArtistByAttributes(name, dateOfBirth, nationality,null,
+                null,null,null,null);
         return repository.findAll(spec).stream()
                 .map(a -> mapper.convertToDTO(a))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ArtistDTO> searchArtist(ArtistSearchRequest artistSearchRequest) {
+        Specification<Artist> spec = ArtistSpecification.getArtistByAttributes(
+                artistSearchRequest.getName(),
+                artistSearchRequest.getDateOfBirth(),
+                artistSearchRequest.getNationality(),
+                artistSearchRequest.getAlbumsCount(),
+                artistSearchRequest.getMinDate(),
+                artistSearchRequest.getMaxDate(),
+                artistSearchRequest.getMinAlbumCount(), artistSearchRequest.getMaxAlbumCount()
+        );
+        List<Artist> artists = repository.findAll(spec);
+        return artists.stream()
+                .map(mapper::convertToDTO)
+                .toList();
     }
 
 

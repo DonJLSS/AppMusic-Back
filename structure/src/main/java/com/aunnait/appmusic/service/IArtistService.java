@@ -4,6 +4,7 @@ import com.aunnait.appmusic.model.dto.AlbumDTO;
 import com.aunnait.appmusic.model.dto.AlbumRequestDTO;
 import com.aunnait.appmusic.model.dto.ArtistDTO;
 import com.aunnait.appmusic.model.dto.ArtistRequestDTO;
+import com.aunnait.appmusic.model.filters.ArtistSearchRequest;
 
 
 import java.time.LocalDate;
@@ -19,5 +20,6 @@ public interface IArtistService {
     ArtistDTO addAlbum(Integer id, AlbumRequestDTO albumDTO);
     ArtistDTO removeAlbum(Integer id, AlbumDTO albumDTO);
     List<ArtistDTO> findAllArtistByAttributes(String name, LocalDate dateOfBirth, String nationality);
+    List<ArtistDTO> searchArtist(ArtistSearchRequest artistSearchRequest);
 
 }

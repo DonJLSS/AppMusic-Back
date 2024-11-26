@@ -1,9 +1,7 @@
 package com.aunnait.appmusic.rest;
 
-import com.aunnait.appmusic.model.dto.AlbumDTO;
-import com.aunnait.appmusic.model.dto.AlbumRequestDTO;
-import com.aunnait.appmusic.model.dto.ArtistDTO;
-import com.aunnait.appmusic.model.dto.ArtistRequestDTO;
+import com.aunnait.appmusic.model.dto.*;
+import com.aunnait.appmusic.model.filters.ArtistSearchRequest;
 import com.aunnait.appmusic.service.IArtistService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -15,7 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -121,19 +118,17 @@ public class ArtistsController {
         return ResponseEntity.ok(updatedArtist);
     }
 
-    //Custom filter get
-    @Operation(description = "Returns all matching Artist bundled into Response")
+    @Operation(description = "Finds artists given criteria and bundles into a List")
+    @PostMapping("/search")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error")})
-    @GetMapping("/search")
-    public ResponseEntity<List<ArtistDTO>> findArtistsByAttributes(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) LocalDate dateOfBirth,
-            @RequestParam(required = false) String nationality){
-        return new ResponseEntity<>(artistService.
-                findAllArtistByAttributes(name,dateOfBirth,nationality), HttpStatus.OK);
+            @ApiResponse(responseCode = "500", description = "Internal Server Error"),
+            @ApiResponse(responseCode = "204",description = "No Content")})
+    public ResponseEntity<List<ArtistDTO>> searchGenre(@RequestBody ArtistSearchRequest artistSearchRequest){
+        List<ArtistDTO> artists = artistService.searchArtist(artistSearchRequest);
+        if (artists != null && !artists.isEmpty()) {
+            return new ResponseEntity<>(artists, HttpStatus.OK);
+        }
+        else return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-
-
 
 }

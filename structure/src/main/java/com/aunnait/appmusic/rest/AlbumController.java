@@ -2,6 +2,7 @@ package com.aunnait.appmusic.rest;
 
 import com.aunnait.appmusic.model.dto.AlbumDTO;
 import com.aunnait.appmusic.model.dto.AlbumRequestDTO;
+import com.aunnait.appmusic.model.filters.AlbumSearchRequest;
 import com.aunnait.appmusic.service.IAlbumService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -9,11 +10,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.HandlerMapping;
 
 import java.util.List;
 
@@ -71,6 +70,10 @@ public class AlbumController {
         return ResponseEntity.status(HttpStatus.CREATED).body(addedAlbum);
     }
 
+    @Operation(description = "Updates any attribute of the Album given")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error"),
+            @ApiResponse(responseCode = "404",description = "Not found")})
     @PatchMapping("/{id}")
     public ResponseEntity<AlbumDTO> patchAlbum(@PathVariable Integer id,
                                                @Valid @RequestBody AlbumRequestDTO albumDTO){
@@ -88,19 +91,16 @@ public class AlbumController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    //Custom filter get
-    @Operation(description = "Returns all matching Album bundled into Response")
+    @Operation(description = "Finds albums given criteria and bundles into a List")
+    @PostMapping("/search")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error")})
-    @GetMapping("/search")
-    public ResponseEntity<List<AlbumDTO>> findAlbumsByAttributes(
-            @RequestParam(required = false) String title,
-            @RequestParam(required = false) Integer launchYear,
-            @RequestParam(required = false) Integer songsCount,
-            @RequestParam(required = false) String coverUrl,
-            @RequestParam(required = false) String artistName){
-        return new ResponseEntity<>(albumService.findAllAlbumByAttributes(title, launchYear, songsCount, coverUrl, artistName),
-                HttpStatus.OK);
+            @ApiResponse(responseCode = "500", description = "Internal Server Error"),
+            @ApiResponse(responseCode = "204",description = "No Content")})
+    public ResponseEntity<List<AlbumDTO>> searchAlbum(AlbumSearchRequest albumSearchRequest){
+        List<AlbumDTO> albums = albumService.searchAlbum(albumSearchRequest);
+        if (albums!=null && !albums.isEmpty())
+            return new ResponseEntity<>(albums, HttpStatus.OK);
+        else return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
 

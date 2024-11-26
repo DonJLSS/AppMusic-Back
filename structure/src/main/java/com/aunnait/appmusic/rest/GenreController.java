@@ -1,6 +1,7 @@
 package com.aunnait.appmusic.rest;
 
 import com.aunnait.appmusic.model.dto.GenreDTO;
+import com.aunnait.appmusic.model.filters.GenreSearchRequest;
 import com.aunnait.appmusic.service.IGenreService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -78,6 +79,19 @@ public class GenreController {
         return ResponseEntity.ok(genreDTOUpdated);
     }
 
+    @Operation(description = "Finds genres given criteria and bundles into a List")
+    @PostMapping("/search")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error"),
+            @ApiResponse(responseCode = "204",description = "No Content")})
+    public ResponseEntity<List<GenreDTO>> searchGenre(@RequestBody GenreSearchRequest genreSearchRequest){
+        List<GenreDTO> genres = genreService.searchGenre(genreSearchRequest);
+        if (genres != null && !genres.isEmpty()) {
+            return new ResponseEntity<>(genres, HttpStatus.OK);
+        }
+        else return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
     @Operation(description = "Deletes a Genre given its id")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
             @ApiResponse(responseCode = "500", description = "Internal Server Error"),
@@ -88,16 +102,5 @@ public class GenreController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @Operation(description = "Returns all matching Genre bundled into Response")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error")})
-    @GetMapping("/search")
-    public ResponseEntity<List<GenreDTO>> findGenresByAttribute(
-            @RequestParam(required = true) String name,
-            @RequestParam(required = false) Integer yearOfOrigin,
-            @RequestParam(required = false) String description){
-        return new ResponseEntity<>(genreService.findAllGenreByAttributes(name, yearOfOrigin, description),
-                HttpStatus.OK);
-    }
 
 }

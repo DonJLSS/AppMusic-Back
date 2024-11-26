@@ -6,6 +6,7 @@ import com.aunnait.appmusic.model.Artist;
 import com.aunnait.appmusic.model.Genre;
 import com.aunnait.appmusic.model.Song;
 import com.aunnait.appmusic.model.dto.*;
+import com.aunnait.appmusic.model.filters.SongSearchRequest;
 import com.aunnait.appmusic.model.mapper.AlbumMapper;
 import com.aunnait.appmusic.model.mapper.ArtistMapper;
 import com.aunnait.appmusic.model.mapper.GenreMapper;
@@ -165,19 +166,27 @@ public class SongService implements ISongService {
     }
 
     @Override
+    public List<SongResponseDTO> searchSongs(SongSearchRequest songSearchRequest) {
+
+        Specification<Song> spec = SongSpecification.getSongByAttributes(
+                songSearchRequest.getTitle(),
+                songSearchRequest.getDuration(),
+                songSearchRequest.getSongUrl(),
+                songSearchRequest.getMinDuration(),
+                songSearchRequest.getMaxDuration(),
+                songSearchRequest.getArtistName(),
+                songSearchRequest.getAlbumName()
+        );
+        List<Song> found = songRepository.findAll(spec);
+        return found.stream()
+                .map(songMapper::convertToResponseDTO)
+                .toList();
+    }
+
+    @Override
     public void deleteSong(Integer id) {
         Song song = EntityErrorHandler(id);
         songRepository.delete(song);
-    }
-
-
-
-    @Override
-    public List<SongDTO> findAllSongByAttributes(String title, Duration duration, String songUrl) {
-        Specification<Song> spec = SongSpecification.getSongByAttributes(title, duration, songUrl);
-        return songRepository.findAll(spec).stream()
-                .map(songMapper::convertToDTO)
-                .collect(Collectors.toList());
     }
 
 

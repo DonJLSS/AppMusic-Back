@@ -5,6 +5,7 @@ import com.aunnait.appmusic.model.Artist;
 import com.aunnait.appmusic.model.dto.AlbumDTO;
 import com.aunnait.appmusic.model.dto.AlbumRequestDTO;
 import com.aunnait.appmusic.model.dto.ArtistDTO;
+import com.aunnait.appmusic.model.filters.AlbumSearchRequest;
 import com.aunnait.appmusic.model.mapper.AlbumMapper;
 import com.aunnait.appmusic.model.mapper.ArtistMapper;
 import com.aunnait.appmusic.model.mapper.SongMapper;
@@ -112,10 +113,28 @@ public class AlbumService implements IAlbumService {
     @Override
     public List<AlbumDTO> findAllAlbumByAttributes(String title, Integer launchYear,
                                                    Integer songsCount, String coverUrl, String artistName) {
-        Specification<Album> spec = AlbumSpecification.getAlbumByAttributes(title, launchYear, songsCount, coverUrl, artistName);
+        Specification<Album> spec = AlbumSpecification.getAlbumByAttributes(title, launchYear, songsCount, coverUrl, artistName,
+                null,null,null,null);
         return albumRepository.findAll(spec).stream()
                 .map(a->albumMapper.toAlbumDTO(a))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<AlbumDTO> searchAlbum(AlbumSearchRequest albumSearchRequest) {
+        Specification<Album> spec = AlbumSpecification.getAlbumByAttributes(
+                albumSearchRequest.getTitle(),
+                albumSearchRequest.getLaunchYear(),
+                albumSearchRequest.getSongsCount(),
+                albumSearchRequest.getCoverUrl(),
+                albumSearchRequest.getArtistName(),
+                albumSearchRequest.getMinYear(),
+                albumSearchRequest.getMaxYear(),
+                albumSearchRequest.getMinSongCount(), albumSearchRequest.getMaxSongCount());
+        List<Album> albums = albumRepository.findAll(spec);
+        return albums.stream()
+                .map(albumMapper::toAlbumDTO)
+                .toList();
     }
 
 

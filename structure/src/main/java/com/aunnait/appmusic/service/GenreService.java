@@ -3,6 +3,7 @@ package com.aunnait.appmusic.service;
 import com.aunnait.appmusic.exceptions.EntityNotFoundException;
 import com.aunnait.appmusic.model.dto.GenreDTO;
 import com.aunnait.appmusic.model.Genre;
+import com.aunnait.appmusic.model.filters.GenreSearchRequest;
 import com.aunnait.appmusic.model.mapper.GenreMapper;
 import com.aunnait.appmusic.repository.GenreRepository;
 import com.aunnait.appmusic.utils.GenreSpecification;
@@ -80,10 +81,25 @@ public class GenreService implements IGenreService {
 
     @Override
     public List<GenreDTO> findAllGenreByAttributes(String name, Integer yearOfOrigin, String description) {
-        Specification<Genre> spec = GenreSpecification.getGenreByAttributes(name, yearOfOrigin, description);
+        Specification<Genre> spec = GenreSpecification.getGenreByAttributes(name, yearOfOrigin, description, null, null);
         return genreRepository.findAll(spec).stream()
                 .map(g->genreMapper.convertToDTO(g))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<GenreDTO> searchGenre(GenreSearchRequest genreSearchRequest){
+        Specification<Genre> spec = GenreSpecification.getGenreByAttributes(
+                genreSearchRequest.getName(),
+                genreSearchRequest.getYearOfOrigin(),
+                genreSearchRequest.getDescription(),
+                genreSearchRequest.getMinYear(),
+                genreSearchRequest.getMaxYear()
+        );
+        List<Genre> genres = genreRepository.findAll(spec);
+        return genres.stream()
+                .map(genreMapper::convertToDTO)
+                .toList();
     }
 
     private Genre ErrorHandlerEntity(Integer id){

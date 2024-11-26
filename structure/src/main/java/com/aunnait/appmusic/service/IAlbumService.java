@@ -2,6 +2,7 @@ package com.aunnait.appmusic.service;
 
 import com.aunnait.appmusic.model.dto.AlbumDTO;
 import com.aunnait.appmusic.model.dto.AlbumRequestDTO;
+import com.aunnait.appmusic.model.filters.AlbumSearchRequest;
 import com.aunnait.appmusic.utils.AlbumOperations;
 
 
@@ -16,5 +17,6 @@ public interface IAlbumService extends AlbumOperations {
     void deleteAlbum(Integer id);
     List<AlbumDTO> findAllAlbumByAttributes(String title, Integer launchYear,
                                             Integer songsCount, String coverUrl, String artistName);
+    List<AlbumDTO> searchAlbum(AlbumSearchRequest albumSearchRequest);
 
 }

@@ -2,6 +2,7 @@ package com.aunnait.appmusic.rest;
 
 import com.aunnait.appmusic.model.dto.SongDTO;
 import com.aunnait.appmusic.model.dto.SongResponseDTO;
+import com.aunnait.appmusic.model.filters.SongSearchRequest;
 import com.aunnait.appmusic.service.ISongService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -90,15 +91,17 @@ public class SongController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @Operation(description = "Returns all matching Song bundled into Response")
+    //--------------------------------------------------Dynamic Search Filter-----------------------------------------------------------
+    @Operation(description = "Finds songs given criteria and bundles into a List")
+    @PostMapping("/search")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error")})
-    @GetMapping("/search")
-    public ResponseEntity<List<SongDTO>> findAllSongsByAttributes(
-            @RequestParam(required = false) String title,
-            @RequestParam(required = false)Duration duration,
-            @RequestParam(required = false) String songUrl){
-        return new ResponseEntity<>(songService.findAllSongByAttributes(title,duration,songUrl), HttpStatus.OK);
+            @ApiResponse(responseCode = "500", description = "Internal Server Error"),
+            @ApiResponse(responseCode = "204",description = "No Content")})
+    public ResponseEntity<List<SongResponseDTO>> searchSongs(@RequestBody SongSearchRequest searchRequest){
+        List<SongResponseDTO> songs = songService.searchSongs(searchRequest);
+        if (songs !=null && !songs.isEmpty())
+            return new ResponseEntity<>(songs, HttpStatus.OK);
+        else return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     //--------------------------------------------------Genre-related operations--------------------------------------------------------

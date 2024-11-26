@@ -2,6 +2,7 @@ package com.aunnait.appmusic.service;
 
 
 import com.aunnait.appmusic.model.dto.GenreDTO;
+import com.aunnait.appmusic.model.filters.GenreSearchRequest;
 
 
 import java.util.List;
@@ -13,6 +14,7 @@ public interface IGenreService {
     GenreDTO addGenre(GenreDTO genreDTO);
     GenreDTO partialUpdateGenre(Integer id, GenreDTO genreDTO);
     void deleteGenre(Integer id);
+    List<GenreDTO> searchGenre(GenreSearchRequest genreSearchRequest);
     List<GenreDTO> findAllGenreByAttributes(String name,Integer yearOfOrigin, String description);
 
 }

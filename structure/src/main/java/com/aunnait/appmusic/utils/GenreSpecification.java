@@ -10,7 +10,7 @@ import java.util.List;
 public class GenreSpecification {
 
     public static Specification<Genre> getGenreByAttributes(String name, Integer yearOfOrigin,
-                                                            String description) {
+                                                            String description, Integer minYear, Integer maxYear) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
@@ -22,6 +22,12 @@ public class GenreSpecification {
             }
             if (description != null && !description.isEmpty()) {
                 predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("description")), "%" + description.toLowerCase() + "%"));
+            }
+            if (minYear != null) {
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("yearOfOrigin"), minYear));
+            }
+            if (maxYear != null) {
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("yearOfOrigin"), maxYear));
             }
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };

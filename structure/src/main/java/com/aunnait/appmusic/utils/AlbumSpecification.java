@@ -6,10 +6,11 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.util.ArrayList;
 import java.util.List;
-
+@SuppressWarnings("DuplicatedCode")
 public class AlbumSpecification {
     public static Specification<Album> getAlbumByAttributes(String title, Integer launchYear,
-                                                            Integer songsCount, String coverUrl, String artistName) {
+                                                            Integer songsCount, String coverUrl, String artistName,
+                                                            Integer minYear, Integer maxYear, Integer minSongCount, Integer maxSongCount) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
@@ -28,6 +29,19 @@ public class AlbumSpecification {
             if (artistName != null && !artistName.isEmpty()) {
                 predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("artist").get("name")), "%" + artistName.toLowerCase() + "%"));
             }
+            if (minYear != null) {
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("launchYear"), minYear));
+            }
+            if (maxYear != null) {
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("launchYear"), maxYear));
+            }
+            if (minSongCount != null) {
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("songsCount"), minSongCount));
+            }
+            if (maxSongCount != null) {
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("songsCount"), maxSongCount));
+            }
+
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
