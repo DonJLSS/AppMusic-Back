@@ -9,6 +9,7 @@ import com.aunnait.appmusic.repository.GenreRepository;
 import com.aunnait.appmusic.utils.GenreSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -88,24 +89,21 @@ public class GenreService implements IGenreService {
     }
 
     @Override
-    public List<GenreDTO> searchGenre(GenreSearchRequest genreSearchRequest){
+    public List<GenreDTO> searchGenre(String name, Integer yearOfOrigin, String description,
+                                      Integer minYear, Integer maxYear,
+                                      String sortBy, boolean isAscending){
         Specification<Genre> spec = GenreSpecification.getGenreByAttributes(
-                genreSearchRequest.getName(),
-                genreSearchRequest.getYearOfOrigin(),
-                genreSearchRequest.getDescription(),
-                genreSearchRequest.getMinYear(),
-                genreSearchRequest.getMaxYear()
-        );
-        List<Genre> genres = genreRepository.findAll(spec);
-        return genres.stream()
+                name,yearOfOrigin,description,minYear,maxYear);
+        Sort sort = isAscending ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+
+        return genreRepository.findAll(spec, sort).stream()
                 .map(genreMapper::convertToDTO)
                 .toList();
     }
 
     private Genre ErrorHandlerEntity(Integer id){
-        Genre genre = genreRepository.findById(id)
+        return genreRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Genre: "+ id +" not found"));
-        return genre;
     }
 
     private void ErrorHandler(GenreDTO genreDTO) {

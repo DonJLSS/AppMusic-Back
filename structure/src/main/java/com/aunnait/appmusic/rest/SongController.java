@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.time.Duration;
 import java.util.List;
 
 /**
@@ -97,14 +96,30 @@ public class SongController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
             @ApiResponse(responseCode = "500", description = "Internal Server Error"),
             @ApiResponse(responseCode = "204",description = "No Content")})
-    public ResponseEntity<List<SongResponseDTO>> searchSongs(@RequestBody SongSearchRequest searchRequest){
-        List<SongResponseDTO> songs = songService.searchSongs(searchRequest);
-        if (songs !=null && !songs.isEmpty())
+    public ResponseEntity<List<SongResponseDTO>> searchSongs(@RequestBody SongSearchRequest searchRequest) {
+
+        String sortBy = searchRequest.getSortBy() != null ? searchRequest.getSortBy() : "title"; //Default sorting by title
+        boolean isAscending = searchRequest.isAscending();
+
+        List<SongResponseDTO> songs = songService.searchSongs(
+                searchRequest.getTitle(),
+                searchRequest.getDuration(),
+                searchRequest.getMinDuration(),
+                searchRequest.getMaxDuration(),
+                searchRequest.getSongUrl(),
+                searchRequest.getArtistName(),
+                searchRequest.getAlbumName(),
+                sortBy,
+                isAscending
+        );
+        if (songs != null && !songs.isEmpty())
             return new ResponseEntity<>(songs, HttpStatus.OK);
-        else return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        else
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     //--------------------------------------------------Genre-related operations--------------------------------------------------------
+
     @Operation(description = "Adds a list of Genre to a Song given its id")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
             @ApiResponse(responseCode = "500", description = "Internal Server Error"),

@@ -33,4 +33,10 @@ public class SongSearchRequest {
 
     @Schema(description = "Maximum duration filter", example = "300")
     private Long maxDuration; //In seconds
+
+    @Schema(description = "Specifies the attribute to sort by", example = "title")
+    private String sortBy;
+
+    @Schema(description = "Specifies the direction of the sorting", example = "true")
+    private boolean ascending;
 }

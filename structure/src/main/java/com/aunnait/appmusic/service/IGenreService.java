@@ -14,7 +14,9 @@ public interface IGenreService {
     GenreDTO addGenre(GenreDTO genreDTO);
     GenreDTO partialUpdateGenre(Integer id, GenreDTO genreDTO);
     void deleteGenre(Integer id);
-    List<GenreDTO> searchGenre(GenreSearchRequest genreSearchRequest);
+    List<GenreDTO> searchGenre(String name, Integer yearOfOrigin, String description,
+                               Integer minYear, Integer maxYear,
+                               String sortBy, boolean isAscending);
     List<GenreDTO> findAllGenreByAttributes(String name,Integer yearOfOrigin, String description);
 
 }

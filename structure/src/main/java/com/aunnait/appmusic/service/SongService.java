@@ -17,6 +17,7 @@ import com.aunnait.appmusic.repository.SongRepository;
 import com.aunnait.appmusic.utils.SongSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -166,21 +167,17 @@ public class SongService implements ISongService {
     }
 
     @Override
-    public List<SongResponseDTO> searchSongs(SongSearchRequest songSearchRequest) {
-
+    public List<SongResponseDTO> searchSongs(String title, Long duration, Long minDuration, Long maxDuration,
+                                             String songUrl, String artistName, String albumName,
+                                             String sortBy, boolean isAscending) {
         Specification<Song> spec = SongSpecification.getSongByAttributes(
-                songSearchRequest.getTitle(),
-                songSearchRequest.getDuration(),
-                songSearchRequest.getSongUrl(),
-                songSearchRequest.getMinDuration(),
-                songSearchRequest.getMaxDuration(),
-                songSearchRequest.getArtistName(),
-                songSearchRequest.getAlbumName()
-        );
-        List<Song> found = songRepository.findAll(spec);
-        return found.stream()
+                title, duration, songUrl, minDuration, maxDuration, artistName, albumName);
+
+        Sort sort = isAscending ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+
+        return songRepository.findAll(spec, sort).stream()
                 .map(songMapper::convertToResponseDTO)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @Override

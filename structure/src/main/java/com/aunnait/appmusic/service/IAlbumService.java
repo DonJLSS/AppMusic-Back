@@ -17,6 +17,10 @@ public interface IAlbumService extends AlbumOperations {
     void deleteAlbum(Integer id);
     List<AlbumDTO> findAllAlbumByAttributes(String title, Integer launchYear,
                                             Integer songsCount, String coverUrl, String artistName);
-    List<AlbumDTO> searchAlbum(AlbumSearchRequest albumSearchRequest);
+    List<AlbumDTO> searchAlbum(String title,Integer launchYear, Integer songsCount,
+                               String coverUrl, String artistName,
+                               Integer minYear, Integer maxYear,
+                               Integer minSongs, Integer maxSongs,
+                               String sortBy, boolean isAscending);
 
 }

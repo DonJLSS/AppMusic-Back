@@ -28,4 +28,9 @@ public class ArtistSearchRequest {
     private Integer minAlbumCount;
     @Schema(description = "Maximum album number to filter", example = "40")
     private Integer maxAlbumCount;
+    @Schema(description = "Specifies the attribute to sort by", example = "name")
+    private String sortBy;
+    @Schema(description = "Specifies the direction of the sorting", example = "true")
+    private boolean ascending;
+
 }

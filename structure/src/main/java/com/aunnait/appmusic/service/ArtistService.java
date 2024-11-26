@@ -13,6 +13,7 @@ import com.aunnait.appmusic.repository.ArtistRepository;
 import com.aunnait.appmusic.exceptions.EntityNotFoundException;
 import com.aunnait.appmusic.utils.AlbumOperations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import com.aunnait.appmusic.utils.ArtistSpecification;
@@ -137,18 +138,14 @@ public class ArtistService implements IArtistService {
     }
 
     @Override
-    public List<ArtistDTO> searchArtist(ArtistSearchRequest artistSearchRequest) {
+    public List<ArtistDTO> searchArtist(String name, String nationality, LocalDate dateOfBirth,
+                                        Integer albumsCount, LocalDate minDate, LocalDate maxDate,
+                                        Integer minAlbumCount, Integer maxAlbumCount,
+                                        String sortBy, boolean isAscending) {
         Specification<Artist> spec = ArtistSpecification.getArtistByAttributes(
-                artistSearchRequest.getName(),
-                artistSearchRequest.getDateOfBirth(),
-                artistSearchRequest.getNationality(),
-                artistSearchRequest.getAlbumsCount(),
-                artistSearchRequest.getMinDate(),
-                artistSearchRequest.getMaxDate(),
-                artistSearchRequest.getMinAlbumCount(), artistSearchRequest.getMaxAlbumCount()
-        );
-        List<Artist> artists = repository.findAll(spec);
-        return artists.stream()
+                name, dateOfBirth, nationality, albumsCount, minDate, maxDate, minAlbumCount, maxAlbumCount);
+        Sort sort = isAscending ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        return artistRepository.findAll(spec,sort).stream()
                 .map(mapper::convertToDTO)
                 .toList();
     }

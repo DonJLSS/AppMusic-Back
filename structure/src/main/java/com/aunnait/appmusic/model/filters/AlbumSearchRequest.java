@@ -39,4 +39,10 @@ public class AlbumSearchRequest {
     @Schema(description = "Maximum song count for the filter", example = "25")
     private Integer maxSongCount;
 
+    @Schema(description = "Specifies the attribute to sort by", example = "title")
+    private String sortBy;
+
+    @Schema(description = "Specifies the direction of the sorting", example = "true")
+    private boolean ascending;
+
 }

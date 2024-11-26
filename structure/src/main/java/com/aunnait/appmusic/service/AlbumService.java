@@ -15,6 +15,7 @@ import com.aunnait.appmusic.utils.SongOperations;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -121,20 +122,18 @@ public class AlbumService implements IAlbumService {
     }
 
     @Override
-    public List<AlbumDTO> searchAlbum(AlbumSearchRequest albumSearchRequest) {
+    public List<AlbumDTO> searchAlbum(String title,Integer launchYear, Integer songsCount,
+                                      String coverUrl, String artistName,
+                                      Integer minYear, Integer maxYear,
+                                      Integer minSongs, Integer maxSongs,
+                                      String sortBy, boolean isAscending) {
         Specification<Album> spec = AlbumSpecification.getAlbumByAttributes(
-                albumSearchRequest.getTitle(),
-                albumSearchRequest.getLaunchYear(),
-                albumSearchRequest.getSongsCount(),
-                albumSearchRequest.getCoverUrl(),
-                albumSearchRequest.getArtistName(),
-                albumSearchRequest.getMinYear(),
-                albumSearchRequest.getMaxYear(),
-                albumSearchRequest.getMinSongCount(), albumSearchRequest.getMaxSongCount());
-        List<Album> albums = albumRepository.findAll(spec);
-        return albums.stream()
+              title,launchYear,songsCount,coverUrl,artistName,minYear,maxYear,minSongs,maxSongs);
+        Sort sort = isAscending ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+
+        return albumRepository.findAll(spec, sort).stream()
                 .map(albumMapper::toAlbumDTO)
-                .toList();
+                .collect(Collectors.toList());
     }
 
 

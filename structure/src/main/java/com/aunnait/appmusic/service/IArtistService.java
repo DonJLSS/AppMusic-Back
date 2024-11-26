@@ -20,6 +20,9 @@ public interface IArtistService {
     ArtistDTO addAlbum(Integer id, AlbumRequestDTO albumDTO);
     ArtistDTO removeAlbum(Integer id, AlbumDTO albumDTO);
     List<ArtistDTO> findAllArtistByAttributes(String name, LocalDate dateOfBirth, String nationality);
-    List<ArtistDTO> searchArtist(ArtistSearchRequest artistSearchRequest);
+    List<ArtistDTO> searchArtist(String name, String nationality, LocalDate dateOfBirth,
+                                 Integer albumsCount, LocalDate minDate, LocalDate maxDate,
+                                 Integer minAlbumCount, Integer maxAlbumCount,
+                                 String sortBy, boolean isAscending);
 
 }

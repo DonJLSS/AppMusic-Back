@@ -123,11 +123,23 @@ public class ArtistsController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
             @ApiResponse(responseCode = "500", description = "Internal Server Error"),
             @ApiResponse(responseCode = "204",description = "No Content")})
-    public ResponseEntity<List<ArtistDTO>> searchGenre(@RequestBody ArtistSearchRequest artistSearchRequest){
-        List<ArtistDTO> artists = artistService.searchArtist(artistSearchRequest);
-        if (artists != null && !artists.isEmpty()) {
+    public ResponseEntity<List<ArtistDTO>> searchGenre(@RequestBody ArtistSearchRequest searchRequest){
+        String sortBy = searchRequest.getSortBy() != null ? searchRequest.getSortBy() : "name"; //Default sorting by name
+        boolean isAscending = searchRequest.isAscending();
+
+        List<ArtistDTO> artists = artistService.searchArtist(
+                searchRequest.getName(),
+                searchRequest.getNationality(),
+                searchRequest.getDateOfBirth(),
+                searchRequest.getAlbumsCount(),
+                searchRequest.getMinDate(),
+                searchRequest.getMaxDate(),
+                searchRequest.getMinAlbumCount(),
+                searchRequest.getMaxAlbumCount(),
+                sortBy, isAscending
+        );
+        if (artists != null && !artists.isEmpty())
             return new ResponseEntity<>(artists, HttpStatus.OK);
-        }
         else return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

@@ -15,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
 /**
  * @author jlserrano
  */
@@ -96,12 +95,24 @@ public class AlbumController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
             @ApiResponse(responseCode = "500", description = "Internal Server Error"),
             @ApiResponse(responseCode = "204",description = "No Content")})
-    public ResponseEntity<List<AlbumDTO>> searchAlbum(AlbumSearchRequest albumSearchRequest){
-        List<AlbumDTO> albums = albumService.searchAlbum(albumSearchRequest);
-        if (albums!=null && !albums.isEmpty())
+    public ResponseEntity<List<AlbumDTO>> searchAlbum(AlbumSearchRequest searchRequest){
+        String sortBy = searchRequest.getSortBy() != null ? searchRequest.getSortBy() : "title"; //Default sorting by title
+        boolean isAscending = searchRequest.isAscending();
+
+        List<AlbumDTO> albums = albumService.searchAlbum(
+                searchRequest.getTitle(),
+                searchRequest.getLaunchYear(),
+                searchRequest.getSongsCount(),
+                searchRequest.getCoverUrl(),
+                searchRequest.getArtistName(),
+                searchRequest.getMinYear(),
+                searchRequest.getMaxYear(),
+                searchRequest.getMinSongCount(),
+                searchRequest.getMaxSongCount(),
+                sortBy, isAscending);
+        if (albums != null && !albums.isEmpty())
             return new ResponseEntity<>(albums, HttpStatus.OK);
         else return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-
 
 }

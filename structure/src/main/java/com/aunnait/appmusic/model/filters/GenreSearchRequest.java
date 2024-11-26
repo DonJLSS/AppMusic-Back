@@ -22,4 +22,10 @@ public class GenreSearchRequest {
     private Integer minYear;
     @Schema(description = "Top year filter", example = "2020")
     private Integer maxYear;
+
+    @Schema(description = "Specifies the attribute to sort by", example = "name")
+    private String sortBy;
+
+    @Schema(description = "Specifies the direction of the sorting", example = "true")
+    private boolean ascending;
 }

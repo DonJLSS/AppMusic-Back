@@ -85,11 +85,18 @@ public class GenreController {
             @ApiResponse(responseCode = "500", description = "Internal Server Error"),
             @ApiResponse(responseCode = "204",description = "No Content")})
     public ResponseEntity<List<GenreDTO>> searchGenre(@RequestBody GenreSearchRequest genreSearchRequest){
-        List<GenreDTO> genres = genreService.searchGenre(genreSearchRequest);
-        if (genres != null && !genres.isEmpty()) {
-            return new ResponseEntity<>(genres, HttpStatus.OK);
-        }
-        else return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+       String sortBy = genreSearchRequest.getSortBy() != null ? genreSearchRequest.getSortBy() : "name";
+       boolean isAscending = genreSearchRequest.isAscending();
+       List<GenreDTO> genres = genreService.searchGenre(
+               genreSearchRequest.getName(),
+               genreSearchRequest.getYearOfOrigin(),
+               genreSearchRequest.getDescription(),
+               genreSearchRequest.getMinYear(),
+               genreSearchRequest.getMaxYear(),
+               sortBy,isAscending);
+       if (genres != null && !genres.isEmpty())
+           return new ResponseEntity<>(genres, HttpStatus.OK);
+       else return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @Operation(description = "Deletes a Genre given its id")
