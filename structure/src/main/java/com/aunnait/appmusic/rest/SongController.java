@@ -32,11 +32,14 @@ public class SongController {
 
     @Operation(description = "Returns all Song bundled into Response")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error")})
+            @ApiResponse(responseCode = "500", description = "Internal Server Error"),
+            @ApiResponse(responseCode = "204",description = "No Content")})
     @GetMapping
     public ResponseEntity<List<SongResponseDTO>> findAll(){
         List<SongResponseDTO> songs = songService.findAll();
-        return new ResponseEntity<>(songs, HttpStatus.OK);
+        if (songs != null && !songs.isEmpty())
+            return new ResponseEntity<>(songs, HttpStatus.OK);
+        else return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @Operation(description = "Returns the Song given its id")
@@ -46,7 +49,8 @@ public class SongController {
     @GetMapping("/{id}")
     public ResponseEntity<SongResponseDTO> getSongById(@PathVariable Integer id){
         SongResponseDTO songDTO = songService.findSongById(id);
-        return ResponseEntity.ok(songDTO);
+        if (songDTO!=null) return ResponseEntity.ok(songDTO);
+        else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @Operation(description = "Updates the Song given its id and DTO")
@@ -114,8 +118,7 @@ public class SongController {
         );
         if (songs != null && !songs.isEmpty())
             return new ResponseEntity<>(songs, HttpStatus.OK);
-        else
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        else return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     //--------------------------------------------------Genre-related operations--------------------------------------------------------

@@ -3,7 +3,6 @@ package com.aunnait.appmusic.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
@@ -21,15 +20,28 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguration {
+//Regular security config
+//    @Bean
+//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception { //Applies before reaching controllers
+//        http
+//                .csrf(csrf -> csrf.disable())
+//                .authorizeHttpRequests(auth -> auth
+//                        .requestMatchers(HttpMethod.POST).authenticated()
+//                        .requestMatchers(HttpMethod.GET).hasRole("ADMIN")
+//                        .anyRequest().authenticated()
+//                )
+//                .httpBasic(withDefaults())
+//                .formLogin(withDefaults());
+//        return http.build();
+//    }
 
+    //Test security config.
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception { //Applies before reaching controllers
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST).authenticated()
-                        .requestMatchers(HttpMethod.GET).hasRole("ADMIN")
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 )
                 .httpBasic(withDefaults())
                 .formLogin(withDefaults());

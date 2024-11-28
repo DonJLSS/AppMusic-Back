@@ -31,11 +31,14 @@ public class GenreController {
 
     @Operation(description = "Returns all Genre bundled into Response")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error")})
+            @ApiResponse(responseCode = "500", description = "Internal Server Error"),
+            @ApiResponse(responseCode = "204",description = "No Content")})
     @GetMapping
     public ResponseEntity<List<GenreDTO>> getAllGenres(){
         List<GenreDTO> genres = genreService.findAll();
-        return new ResponseEntity<>(genres, HttpStatus.OK);
+        if (genres != null && !genres.isEmpty())
+            return new ResponseEntity<>(genres, HttpStatus.OK);
+        else return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @Operation(description = "Returns the Genre given its id")

@@ -32,11 +32,14 @@ public class AlbumController {
 
     @Operation(description = "Return all Album bundled into Response")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error")})
+            @ApiResponse(responseCode = "500", description = "Internal Server Error"),
+            @ApiResponse(responseCode = "204",description = "No Content")})
     @GetMapping
     public ResponseEntity<List<AlbumDTO>> getAllAlbums() {
         List<AlbumDTO> albums = albumService.findAll();
-        return new ResponseEntity<>(albums, HttpStatus.OK);
+        if (albums != null && !albums.isEmpty())
+            return new ResponseEntity<>(albums, HttpStatus.OK);
+        else return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @Operation(description = "Returns the Album given its id")
@@ -46,7 +49,9 @@ public class AlbumController {
     @GetMapping("/{id}")
     public ResponseEntity<AlbumDTO> getAlbumById(@PathVariable Integer id) {
         AlbumDTO albumDTO = albumService.findAlbumById(id);
-        return ResponseEntity.ok(albumDTO);
+        if (albumDTO != null)
+            return new ResponseEntity<>(albumDTO, HttpStatus.OK);
+        else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @Operation(description = "Updates the Album given its id and DTO")

@@ -32,11 +32,14 @@ public class ArtistsController {
 
     @Operation(description = "Returns all Artist bundled into Response")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error")})
+            @ApiResponse(responseCode = "500", description = "Internal Server Error"),
+            @ApiResponse(responseCode = "204",description = "No Content")})
     @GetMapping
     public ResponseEntity<List<ArtistDTO>> getAllArtists() {
         List<ArtistDTO> artists = artistService.findAll();
-        return new ResponseEntity<>(artists, HttpStatus.OK);
+        if (artists != null && !artists.isEmpty())
+            return new ResponseEntity<>(artists, HttpStatus.OK);
+        else return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @Operation(description = "Returns the Artist given its id")
@@ -46,7 +49,9 @@ public class ArtistsController {
     @GetMapping("/{id}")
     public ResponseEntity<ArtistDTO> getArtistById(@PathVariable Integer id) {
         ArtistDTO artistDTO = artistService.findArtistById(id);
-        return ResponseEntity.ok(artistDTO);
+        if (artistDTO != null)
+            return ResponseEntity.ok(artistDTO);
+        else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @Operation(description = "Updates the Artist given its id and DTO")
