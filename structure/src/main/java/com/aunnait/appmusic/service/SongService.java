@@ -6,7 +6,6 @@ import com.aunnait.appmusic.model.Artist;
 import com.aunnait.appmusic.model.Genre;
 import com.aunnait.appmusic.model.Song;
 import com.aunnait.appmusic.model.dto.*;
-import com.aunnait.appmusic.model.filters.SongSearchRequest;
 import com.aunnait.appmusic.model.mapper.AlbumMapper;
 import com.aunnait.appmusic.model.mapper.ArtistMapper;
 import com.aunnait.appmusic.model.mapper.GenreMapper;
@@ -20,12 +19,16 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ReflectionUtils;
 
-import java.time.Duration;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @SuppressWarnings("DuplicatedCode")
 @Service
@@ -123,48 +126,7 @@ public class SongService implements ISongService {
         return songMapper.convertToDTO(saved);
     }
 
-    @Override
-    public SongResponseDTO partialUpdateSong(Integer id, SongDTO songDTO) {
-        Song song = EntityErrorHandler(id);
 
-        if (songDTO.getArtistName() != null && !songDTO.getArtistName().isEmpty()) {
-            Optional<ArtistDTO> artist = artistService.findAllArtistByAttributes(songDTO.getArtistName(), null, null)
-                    .stream()
-                    .findFirst();
-            if (artist.isPresent()) {
-                Artist artistEntity = artistMapper.convertToEntity(artist.get());
-                song.setArtist(artistEntity);
-            } else {
-                throw new EntityNotFoundException("Artist: " + songDTO.getArtistName() + " not found");
-            }
-        }
-
-        if (songDTO.getAlbumName() != null && !songDTO.getAlbumName().isEmpty()) {
-            Optional<AlbumDTO> albumDTOOptional = albumService.findAllAlbumByAttributes(
-                    songDTO.getAlbumName(), null, null, null, null
-            ).stream().findFirst();
-            if (albumDTOOptional.isPresent()) {
-                Album albumEntity = albumMapper.convertToEntity(albumDTOOptional.get());
-                song.setAlbum(albumEntity);
-            } else {
-                throw new EntityNotFoundException("Album: " + songDTO.getAlbumName() + " not found");
-            }
-        }
-
-        if (songDTO.getTitle() != null && !songDTO.getTitle().isEmpty()) {
-            song.setTitle(songDTO.getTitle());
-        }
-        if (songDTO.getDuration() != null) {
-            song.setDuration(songDTO.getDuration());
-        }
-        if (songDTO.getSongUrl() != null && !songDTO.getSongUrl().isEmpty()) {
-            song.setSongUrl(songDTO.getSongUrl());
-        }
-
-        Song savedSong = songRepository.save(song);
-
-        return songMapper.convertToResponseDTO(savedSong);
-    }
 
     @Override
     public List<SongResponseDTO> searchSongs(String title, Long duration, Long minDuration, Long maxDuration,
@@ -178,6 +140,19 @@ public class SongService implements ISongService {
         return songRepository.findAll(spec, sort).stream()
                 .map(songMapper::convertToResponseDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public SongResponseDTO patchSong(Integer id, Map<Object, Object> fields){
+        Song song = EntityErrorHandler(id);
+        fields.forEach((key,value)->{
+            Field field = ReflectionUtils.findField(Song.class, (String) key);
+            field.setAccessible(true);
+            ReflectionUtils.setField(field,song,value);
+        });
+        Song updated = songRepository.save(song);
+        return songMapper.convertToResponseDTO(updated);
+
     }
 
     @Override

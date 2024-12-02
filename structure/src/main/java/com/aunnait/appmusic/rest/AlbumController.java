@@ -15,6 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+
 /**
  * @author jlserrano
  */
@@ -80,8 +82,8 @@ public class AlbumController {
             @ApiResponse(responseCode = "404",description = "Not found")})
     @PatchMapping("/{id}")
     public ResponseEntity<AlbumDTO> patchAlbum(@PathVariable Integer id,
-                                               @Valid @RequestBody AlbumRequestDTO albumDTO){
-        AlbumDTO updatedAlbum = albumService.partialUpdateAlbum(id,albumDTO);
+                                               @RequestBody Map<Object,Object> fields){
+        AlbumDTO updatedAlbum = albumService.patchAlbum(id,fields);
         return ResponseEntity.ok(updatedAlbum);
     }
 

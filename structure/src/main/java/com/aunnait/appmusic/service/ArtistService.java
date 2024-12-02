@@ -6,7 +6,6 @@ import com.aunnait.appmusic.model.dto.AlbumDTO;
 import com.aunnait.appmusic.model.dto.AlbumRequestDTO;
 import com.aunnait.appmusic.model.dto.ArtistDTO;
 import com.aunnait.appmusic.model.dto.ArtistRequestDTO;
-import com.aunnait.appmusic.model.filters.ArtistSearchRequest;
 import com.aunnait.appmusic.model.mapper.AlbumMapper;
 import com.aunnait.appmusic.model.mapper.ArtistMapper;
 import com.aunnait.appmusic.repository.ArtistRepository;
@@ -17,8 +16,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import com.aunnait.appmusic.utils.ArtistSpecification;
+import org.springframework.util.ReflectionUtils;
+
+import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -90,17 +93,15 @@ public class ArtistService implements IArtistService {
     }
 
     @Override
-    public ArtistDTO partialUpdateArtist(Integer id, ArtistRequestDTO artistRequestDTO) {
+    public ArtistDTO patchArtist(Integer id, Map<Object,Object> fields) {
         Artist artist = ErrorHandlerEntity(id);
-        if (artistRequestDTO.getName()!=null && !artistRequestDTO.getName().isEmpty())
-            artist.setName(artistRequestDTO.getName());
-        if (artistRequestDTO.getNationality()!=null && !artistRequestDTO.getNationality().isEmpty())
-            artist.setNationality(artistRequestDTO.getNationality());
-        if (!artistRequestDTO.getDateOfBirth().isBefore(LocalDate.of(1900, 1, 1))
-                && !artistRequestDTO.getDateOfBirth().isAfter(LocalDate.now()))
-            artist.setDateOfBirth(artistRequestDTO.getDateOfBirth());
-        Artist savedArtist = artistRepository.save(artist);
-        return artistMapper.convertToDTO(savedArtist);
+        fields.forEach((key,value)->{
+            Field field = ReflectionUtils.findField(Artist.class, (String) key);
+            field.setAccessible(true);
+            ReflectionUtils.setField(field,artist,value);
+        });
+        Artist updated = repository.save(artist);
+        return mapper.convertToDTO(updated);
 
     }
 

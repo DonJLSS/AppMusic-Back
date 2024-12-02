@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author jlserrano
@@ -77,8 +78,8 @@ public class GenreController {
             @ApiResponse(responseCode = "404",description = "Not found")})
     @PatchMapping("/{id}")
     public ResponseEntity<GenreDTO> patchGenre(@PathVariable Integer id,
-                                               @Valid @RequestBody GenreDTO genreDTO){
-        GenreDTO genreDTOUpdated = genreService.partialUpdateGenre(id, genreDTO);
+                                               @RequestBody Map<Object, Object> fields){
+        GenreDTO genreDTOUpdated = genreService.patchGenre(id, fields);
         return ResponseEntity.ok(genreDTOUpdated);
     }
 

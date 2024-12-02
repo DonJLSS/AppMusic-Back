@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author jlserrano
@@ -82,8 +83,8 @@ public class ArtistsController {
             @ApiResponse(responseCode = "500", description = "Internal Server Error"),
             @ApiResponse(responseCode = "404",description = "Not found")})
     public ResponseEntity<ArtistDTO> patchArtist(@PathVariable Integer id,
-                                                 @Valid @RequestBody ArtistRequestDTO artistDTO){
-        ArtistDTO artistPatched = artistService.partialUpdateArtist(id, artistDTO);
+                                                 @RequestBody Map<Object,Object> fields){
+        ArtistDTO artistPatched = artistService.patchArtist(id,fields);
         return ResponseEntity.ok(artistPatched);
     }
 

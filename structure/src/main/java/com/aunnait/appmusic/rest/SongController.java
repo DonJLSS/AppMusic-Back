@@ -1,9 +1,14 @@
 package com.aunnait.appmusic.rest;
 
+import com.aunnait.appmusic.model.Song;
 import com.aunnait.appmusic.model.dto.SongDTO;
 import com.aunnait.appmusic.model.dto.SongResponseDTO;
 import com.aunnait.appmusic.model.filters.SongSearchRequest;
+import com.aunnait.appmusic.model.mapper.SongMapper;
 import com.aunnait.appmusic.service.ISongService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.github.fge.jsonpatch.JsonPatch;
+import com.github.fge.jsonpatch.JsonPatchException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -14,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author jlserrano
@@ -24,10 +30,12 @@ import java.util.List;
 public class SongController {
 
     private final ISongService songService;
+    private final SongMapper songMapper;
 
     @Autowired
-    public SongController(ISongService songService) {
+    public SongController(ISongService songService, SongMapper songMapper) {
         this.songService = songService;
+        this.songMapper = songMapper;
     }
 
     @Operation(description = "Returns all Song bundled into Response")
@@ -77,11 +85,12 @@ public class SongController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
             @ApiResponse(responseCode = "500", description = "Internal Server Error"),
             @ApiResponse(responseCode = "404",description = "Not found")})
-    @PatchMapping("/{id}")
-    public ResponseEntity<SongResponseDTO> partialUpdateSong(@PathVariable Integer id,
-                                                             @Valid @RequestBody SongDTO songDTO){
-        SongResponseDTO updated = songService.partialUpdateSong(id,songDTO);
-        return ResponseEntity.ok(updated);
+    @PatchMapping(value = "/{id}", consumes = "application/json-patch+json")
+    public ResponseEntity<SongResponseDTO> patchSong(@PathVariable Integer id,
+                                             @RequestBody Map<Object,Object> fields) {
+        SongResponseDTO updatedSong = songService.patchSong(id,fields);
+        return ResponseEntity.ok(updatedSong);
+
     }
 
     @Operation(description = "Deletes a Song given its id")

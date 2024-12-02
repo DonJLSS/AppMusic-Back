@@ -1,11 +1,8 @@
 package com.aunnait.appmusic.service;
 
 import com.aunnait.appmusic.model.Album;
-import com.aunnait.appmusic.model.Artist;
 import com.aunnait.appmusic.model.dto.AlbumDTO;
 import com.aunnait.appmusic.model.dto.AlbumRequestDTO;
-import com.aunnait.appmusic.model.dto.ArtistDTO;
-import com.aunnait.appmusic.model.filters.AlbumSearchRequest;
 import com.aunnait.appmusic.model.mapper.AlbumMapper;
 import com.aunnait.appmusic.model.mapper.ArtistMapper;
 import com.aunnait.appmusic.model.mapper.SongMapper;
@@ -18,9 +15,11 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ReflectionUtils;
 
+import java.lang.reflect.Field;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("DuplicatedCode")
@@ -80,27 +79,15 @@ public class AlbumService implements IAlbumService {
     }
 
     @Override
-    public AlbumDTO partialUpdateAlbum(Integer id, AlbumRequestDTO albumRequestDTO) {
+    public AlbumDTO patchAlbum(Integer id, Map<Object,Object> fields) {
         Album album = ErrorHandlerEntity(id);
-        if (albumRequestDTO.getArtistName()!=null && !albumRequestDTO.getArtistName().isEmpty()){
-            Optional<ArtistDTO> artistDTO = artistService.findAllArtistByAttributes(albumRequestDTO.getArtistName(), null, null)
-                    .stream()
-                    .findFirst();
-            if (artistDTO.isPresent()){
-                Artist artist = artistMapper.convertToEntity(artistDTO.get());
-                album.setArtist(artist);
-            }
-            else throw new EntityNotFoundException("Artist: "+ albumRequestDTO.getArtistName() + " not found");
-
-        }
-        if (albumRequestDTO.getTitle()!=null && !albumRequestDTO.getTitle().isEmpty())
-            album.setTitle(albumRequestDTO.getTitle());
-        if (albumRequestDTO.getDescription()!=null && !albumRequestDTO.getDescription().isEmpty())
-            album.setDescription(albumRequestDTO.getDescription());
-        if (albumRequestDTO.getLaunchYear()>=0)
-            album.setLaunchYear(albumRequestDTO.getLaunchYear());
-        Album savedAlbum = albumRepository.save(album);
-        return albumMapper.toAlbumDTO(savedAlbum);
+        fields.forEach((key,value)->{
+            Field field = ReflectionUtils.findField(Album.class, (String) key);
+            field.setAccessible(true);
+            ReflectionUtils.setField(field,album,value);
+        });
+        Album updated = albumRepository.save(album);
+        return albumMapper.toAlbumDTO(updated);
     }
 
 
