@@ -1,14 +1,10 @@
 package com.aunnait.appmusic.rest;
 
-import com.aunnait.appmusic.model.Song;
 import com.aunnait.appmusic.model.dto.SongDTO;
 import com.aunnait.appmusic.model.dto.SongResponseDTO;
 import com.aunnait.appmusic.model.filters.SongSearchRequest;
 import com.aunnait.appmusic.model.mapper.SongMapper;
 import com.aunnait.appmusic.service.ISongService;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.github.fge.jsonpatch.JsonPatch;
-import com.github.fge.jsonpatch.JsonPatchException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;

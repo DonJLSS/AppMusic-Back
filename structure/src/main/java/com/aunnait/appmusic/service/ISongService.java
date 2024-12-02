@@ -1,15 +1,10 @@
 package com.aunnait.appmusic.service;
 
 
-import com.aunnait.appmusic.model.Song;
 import com.aunnait.appmusic.model.dto.SongDTO;
 import com.aunnait.appmusic.model.dto.SongResponseDTO;
 import com.aunnait.appmusic.utils.GenreOperations;
 import com.aunnait.appmusic.utils.SongOperations;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.github.fge.jsonpatch.JsonPatch;
-import com.github.fge.jsonpatch.JsonPatchException;
-import io.swagger.v3.core.util.Json;
 
 import java.util.List;
 import java.util.Map;
