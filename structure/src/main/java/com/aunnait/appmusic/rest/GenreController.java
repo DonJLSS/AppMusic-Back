@@ -1,8 +1,8 @@
 package com.aunnait.appmusic.rest;
 
 import com.aunnait.appmusic.model.dto.GenreDTO;
-import com.aunnait.appmusic.model.filters.GenreSearchRequest;
-import com.aunnait.appmusic.service.IGenreService;
+import com.aunnait.appmusic.service.interfaces.IGenreService;
+import com.aunnait.appmusic.model.filters.DynamicSearchRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -88,19 +88,14 @@ public class GenreController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
             @ApiResponse(responseCode = "500", description = "Internal Server Error"),
             @ApiResponse(responseCode = "204",description = "No Content")})
-    public ResponseEntity<List<GenreDTO>> searchGenre(@RequestBody GenreSearchRequest genreSearchRequest){
-       String sortBy = genreSearchRequest.getSortBy() != null ? genreSearchRequest.getSortBy() : "name";
-       boolean isAscending = genreSearchRequest.isAscending();
-       List<GenreDTO> genres = genreService.searchGenre(
-               genreSearchRequest.getName(),
-               genreSearchRequest.getYearOfOrigin(),
-               genreSearchRequest.getDescription(),
-               genreSearchRequest.getMinYear(),
-               genreSearchRequest.getMaxYear(),
-               sortBy,isAscending);
-       if (genres != null && !genres.isEmpty())
-           return new ResponseEntity<>(genres, HttpStatus.OK);
-       else return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    public ResponseEntity<List<GenreDTO>> searchGenre(@RequestBody DynamicSearchRequest searchRequest){
+        List<GenreDTO> genres = genreService.searchGenre(searchRequest);
+
+        if (genres != null && !genres.isEmpty()) {
+            return ResponseEntity.ok(genres);
+        } else {
+            return ResponseEntity.noContent().build();
+        }
     }
 
     @Operation(description = "Deletes a Genre given its id")

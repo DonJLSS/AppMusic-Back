@@ -1,10 +1,10 @@
-package com.aunnait.appmusic.service;
+package com.aunnait.appmusic.service.interfaces;
 
 import com.aunnait.appmusic.model.dto.AlbumDTO;
 import com.aunnait.appmusic.model.dto.AlbumRequestDTO;
 import com.aunnait.appmusic.model.dto.ArtistDTO;
 import com.aunnait.appmusic.model.dto.ArtistRequestDTO;
-
+import com.aunnait.appmusic.model.filters.DynamicSearchRequest;
 
 
 import java.time.LocalDate;
@@ -21,9 +21,6 @@ public interface IArtistService {
     ArtistDTO addAlbum(Integer id, AlbumRequestDTO albumDTO);
     ArtistDTO removeAlbum(Integer id, AlbumDTO albumDTO);
     List<ArtistDTO> findAllArtistByAttributes(String name, LocalDate dateOfBirth, String nationality);
-    List<ArtistDTO> searchArtist(String name, String nationality, LocalDate dateOfBirth,
-                                 Integer albumsCount, LocalDate minDate, LocalDate maxDate,
-                                 Integer minAlbumCount, Integer maxAlbumCount,
-                                 String sortBy, boolean isAscending);
+    List<ArtistDTO> searchArtist(DynamicSearchRequest searchRequest);
 
 }

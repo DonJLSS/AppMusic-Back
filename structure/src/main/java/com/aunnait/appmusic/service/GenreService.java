@@ -5,9 +5,14 @@ import com.aunnait.appmusic.model.dto.GenreDTO;
 import com.aunnait.appmusic.model.Genre;
 import com.aunnait.appmusic.model.mapper.GenreMapper;
 import com.aunnait.appmusic.repository.GenreRepository;
+import com.aunnait.appmusic.service.interfaces.IGenreService;
+import com.aunnait.appmusic.model.filters.DynamicSearchRequest;
 import com.aunnait.appmusic.utils.GenreSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -89,16 +94,32 @@ public class GenreService implements IGenreService {
 
 
     @Override
-    public List<GenreDTO> searchGenre(String name, Integer yearOfOrigin, String description,
-                                      Integer minYear, Integer maxYear,
-                                      String sortBy, boolean isAscending){
-        Specification<Genre> spec = GenreSpecification.getGenreByAttributes(
-                name,yearOfOrigin,description,minYear,maxYear);
-        Sort sort = isAscending ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+    public List<GenreDTO> searchGenre(DynamicSearchRequest searchRequest){
+        Specification<Genre> spec = Specification.where(null);
+        for (DynamicSearchRequest.SearchCriteria criteria : searchRequest.getListSearchCriteria()) {
+            spec = spec.and(GenreSpecification.getGenreSpecification(criteria.getKey(), criteria.getOperation(), criteria.getValue()));
+        }
 
-        return genreRepository.findAll(spec, sort).stream()
+        Sort sort = Sort.unsorted();
+        for (DynamicSearchRequest.SortCriteria order : searchRequest.getListOrderCriteria()) {
+            Sort orderSort = order.getValueSortOrder() == DynamicSearchRequest.SortValue.ASC
+                    ? Sort.by(order.getSortBy()).ascending()
+                    : Sort.by(order.getSortBy()).descending();
+            sort = sort.and(orderSort);
+        }
+
+        Pageable pageable = PageRequest.of(
+                searchRequest.getPage().getPageIndex(),
+                searchRequest.getPage().getPageSize(),
+                sort
+        );
+        Page<Genre> filtered = genreRepository.findAll(spec,pageable);
+
+        List<GenreDTO> genresDTOs = filtered.stream()
                 .map(genreMapper::convertToDTO)
                 .toList();
+
+        return genresDTOs;
     }
 
     private Genre EntityErrorHandler(Integer id){

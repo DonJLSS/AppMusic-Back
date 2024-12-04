@@ -2,16 +2,18 @@ package com.aunnait.appmusic.service;
 
 import com.aunnait.appmusic.model.Album;
 import com.aunnait.appmusic.model.Artist;
-import com.aunnait.appmusic.model.dto.AlbumDTO;
-import com.aunnait.appmusic.model.dto.AlbumRequestDTO;
-import com.aunnait.appmusic.model.dto.ArtistDTO;
-import com.aunnait.appmusic.model.dto.ArtistRequestDTO;
+import com.aunnait.appmusic.model.dto.*;
 import com.aunnait.appmusic.model.mapper.AlbumMapper;
 import com.aunnait.appmusic.model.mapper.ArtistMapper;
 import com.aunnait.appmusic.repository.ArtistRepository;
 import com.aunnait.appmusic.exceptions.EntityNotFoundException;
+import com.aunnait.appmusic.service.interfaces.IArtistService;
 import com.aunnait.appmusic.utils.AlbumOperations;
+import com.aunnait.appmusic.model.filters.DynamicSearchRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -139,16 +141,32 @@ public class ArtistService implements IArtistService {
     }
 
     @Override
-    public List<ArtistDTO> searchArtist(String name, String nationality, LocalDate dateOfBirth,
-                                        Integer albumsCount, LocalDate minDate, LocalDate maxDate,
-                                        Integer minAlbumCount, Integer maxAlbumCount,
-                                        String sortBy, boolean isAscending) {
-        Specification<Artist> spec = ArtistSpecification.getArtistByAttributes(
-                name, dateOfBirth, nationality, albumsCount, minDate, maxDate, minAlbumCount, maxAlbumCount);
-        Sort sort = isAscending ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
-        return artistRepository.findAll(spec,sort).stream()
+    public List<ArtistDTO> searchArtist(DynamicSearchRequest searchRequest) {
+        Specification<Artist> spec = Specification.where(null);
+        for (DynamicSearchRequest.SearchCriteria criteria : searchRequest.getListSearchCriteria()) {
+            spec = spec.and(ArtistSpecification.getArtistSpecification(criteria.getKey(), criteria.getOperation(), criteria.getValue()));
+        }
+
+        Sort sort = Sort.unsorted();
+        for (DynamicSearchRequest.SortCriteria order : searchRequest.getListOrderCriteria()) {
+            Sort orderSort = order.getValueSortOrder() == DynamicSearchRequest.SortValue.ASC
+                    ? Sort.by(order.getSortBy()).ascending()
+                    : Sort.by(order.getSortBy()).descending();
+            sort = sort.and(orderSort);
+        }
+
+        Pageable pageable = PageRequest.of(
+                searchRequest.getPage().getPageIndex(),
+                searchRequest.getPage().getPageSize(),
+                sort
+        );
+        Page<Artist> filtered = artistRepository.findAll(spec,pageable);
+
+        List<ArtistDTO> artistDTOs = filtered.stream()
                 .map(mapper::convertToDTO)
                 .toList();
+
+        return artistDTOs;
     }
 
 

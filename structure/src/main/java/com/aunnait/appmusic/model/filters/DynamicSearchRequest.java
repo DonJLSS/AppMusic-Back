@@ -1,4 +1,4 @@
-package com.aunnait.appmusic.utils;
+package com.aunnait.appmusic.model.filters;
 
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;

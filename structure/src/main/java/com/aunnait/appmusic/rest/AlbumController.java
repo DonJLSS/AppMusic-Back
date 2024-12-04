@@ -2,8 +2,8 @@ package com.aunnait.appmusic.rest;
 
 import com.aunnait.appmusic.model.dto.AlbumDTO;
 import com.aunnait.appmusic.model.dto.AlbumRequestDTO;
-import com.aunnait.appmusic.model.filters.AlbumSearchRequest;
-import com.aunnait.appmusic.service.IAlbumService;
+import com.aunnait.appmusic.service.interfaces.IAlbumService;
+import com.aunnait.appmusic.model.filters.DynamicSearchRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -102,24 +102,16 @@ public class AlbumController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
             @ApiResponse(responseCode = "500", description = "Internal Server Error"),
             @ApiResponse(responseCode = "204",description = "No Content")})
-    public ResponseEntity<List<AlbumDTO>> searchAlbum(AlbumSearchRequest searchRequest){
-        String sortBy = searchRequest.getSortBy() != null ? searchRequest.getSortBy() : "title"; //Default sorting by title
-        boolean isAscending = searchRequest.isAscending();
+    public ResponseEntity<List<AlbumDTO>> searchAlbum(DynamicSearchRequest searchRequest){
+        List<AlbumDTO> albums = albumService.searchAlbum(searchRequest);
 
-        List<AlbumDTO> albums = albumService.searchAlbum(
-                searchRequest.getTitle(),
-                searchRequest.getLaunchYear(),
-                searchRequest.getSongsCount(),
-                searchRequest.getCoverUrl(),
-                searchRequest.getArtistName(),
-                searchRequest.getMinYear(),
-                searchRequest.getMaxYear(),
-                searchRequest.getMinSongCount(),
-                searchRequest.getMaxSongCount(),
-                sortBy, isAscending);
-        if (albums != null && !albums.isEmpty())
-            return new ResponseEntity<>(albums, HttpStatus.OK);
-        else return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        if (albums != null && !albums.isEmpty()) {
+            return ResponseEntity.ok(albums);
+        } else {
+            return ResponseEntity.noContent().build();
+        }
+
     }
+
 
 }

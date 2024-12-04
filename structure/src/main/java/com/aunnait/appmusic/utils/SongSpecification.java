@@ -1,6 +1,7 @@
 package com.aunnait.appmusic.utils;
 
 import com.aunnait.appmusic.model.Song;
+import com.aunnait.appmusic.model.filters.DynamicSearchRequest;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;

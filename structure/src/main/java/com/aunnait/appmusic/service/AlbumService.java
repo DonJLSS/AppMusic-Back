@@ -7,11 +7,16 @@ import com.aunnait.appmusic.model.mapper.AlbumMapper;
 import com.aunnait.appmusic.model.mapper.ArtistMapper;
 import com.aunnait.appmusic.model.mapper.SongMapper;
 import com.aunnait.appmusic.repository.AlbumRepository;
+import com.aunnait.appmusic.service.interfaces.IAlbumService;
 import com.aunnait.appmusic.utils.AlbumSpecification;
+import com.aunnait.appmusic.model.filters.DynamicSearchRequest;
 import com.aunnait.appmusic.utils.SongOperations;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -109,18 +114,32 @@ public class AlbumService implements IAlbumService {
     }
 
     @Override
-    public List<AlbumDTO> searchAlbum(String title,Integer launchYear, Integer songsCount,
-                                      String coverUrl, String artistName,
-                                      Integer minYear, Integer maxYear,
-                                      Integer minSongs, Integer maxSongs,
-                                      String sortBy, boolean isAscending) {
-        Specification<Album> spec = AlbumSpecification.getAlbumByAttributes(
-              title,launchYear,songsCount,coverUrl,artistName,minYear,maxYear,minSongs,maxSongs);
-        Sort sort = isAscending ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+    public List<AlbumDTO> searchAlbum(DynamicSearchRequest searchRequest) {
+        Specification<Album> spec = Specification.where(null);
+        for (DynamicSearchRequest.SearchCriteria criteria : searchRequest.getListSearchCriteria()) {
+            spec = spec.and(AlbumSpecification.getAlbumSpecification(criteria.getKey(), criteria.getOperation(), criteria.getValue()));
+        }
 
-        return albumRepository.findAll(spec, sort).stream()
+        Sort sort = Sort.unsorted();
+        for (DynamicSearchRequest.SortCriteria order : searchRequest.getListOrderCriteria()) {
+            Sort orderSort = order.getValueSortOrder() == DynamicSearchRequest.SortValue.ASC
+                    ? Sort.by(order.getSortBy()).ascending()
+                    : Sort.by(order.getSortBy()).descending();
+            sort = sort.and(orderSort);
+        }
+
+        Pageable pageable = PageRequest.of(
+                searchRequest.getPage().getPageIndex(),
+                searchRequest.getPage().getPageSize(),
+                sort
+        );
+        Page<Album> filtered = albumRepository.findAll(spec,pageable);
+
+        List<AlbumDTO> albumsDTOs = filtered.stream()
                 .map(albumMapper::toAlbumDTO)
-                .collect(Collectors.toList());
+                .toList();
+
+        return albumsDTOs;
     }
 
 

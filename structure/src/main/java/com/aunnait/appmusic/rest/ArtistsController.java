@@ -1,8 +1,8 @@
 package com.aunnait.appmusic.rest;
 
 import com.aunnait.appmusic.model.dto.*;
-import com.aunnait.appmusic.model.filters.ArtistSearchRequest;
-import com.aunnait.appmusic.service.IArtistService;
+import com.aunnait.appmusic.service.interfaces.IArtistService;
+import com.aunnait.appmusic.model.filters.DynamicSearchRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -129,24 +129,14 @@ public class ArtistsController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
             @ApiResponse(responseCode = "500", description = "Internal Server Error"),
             @ApiResponse(responseCode = "204",description = "No Content")})
-    public ResponseEntity<List<ArtistDTO>> searchGenre(@RequestBody ArtistSearchRequest searchRequest){
-        String sortBy = searchRequest.getSortBy() != null ? searchRequest.getSortBy() : "name"; //Default sorting by name
-        boolean isAscending = searchRequest.isAscending();
+    public ResponseEntity<List<ArtistDTO>> searchGenre(@RequestBody DynamicSearchRequest searchRequest) {
+        List<ArtistDTO> artists = artistService.searchArtist(searchRequest);
 
-        List<ArtistDTO> artists = artistService.searchArtist(
-                searchRequest.getName(),
-                searchRequest.getNationality(),
-                searchRequest.getDateOfBirth(),
-                searchRequest.getAlbumsCount(),
-                searchRequest.getMinDate(),
-                searchRequest.getMaxDate(),
-                searchRequest.getMinAlbumCount(),
-                searchRequest.getMaxAlbumCount(),
-                sortBy, isAscending
-        );
-        if (artists != null && !artists.isEmpty())
-            return new ResponseEntity<>(artists, HttpStatus.OK);
-        else return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        if (artists != null && !artists.isEmpty()) {
+            return ResponseEntity.ok(artists);
+        } else {
+            return ResponseEntity.noContent().build();
+        }
     }
 
 }
