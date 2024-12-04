@@ -1,40 +1,45 @@
 package com.aunnait.appmusic.exceptions;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.github.fge.jsonpatch.JsonPatchException;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.context.request.WebRequest;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<String> handleInvalidDataException(EntityNotFoundException ex, WebRequest request) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
-    }
-
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException ex, WebRequest request) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                ex.getMessage(),
+                LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
-    // Other exceptions handling
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleEntityNotFoundException(EntityNotFoundException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.NOT_FOUND.value(),
+                ex.getMessage(),
+                LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleGlobalException(Exception ex, WebRequest request) {
-        return new ResponseEntity<>("Internal server error.", HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "An unexpected error occurred: " + ex.getMessage(),
+                LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-
-//    @ExceptionHandler(JsonParseException.class)
-//    public ResponseEntity<String> handleJsonParseException(JsonParseException ex, WebRequest request){
-//        return new ResponseEntity<>(ex.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
-//    }
-//
-//    @ExceptionHandler(JsonPatchException.class)
-//    public ResponseEntity<String> handleJsonPatchException(JsonPatchException ex, WebRequest request){
-//        return new ResponseEntity<>(ex.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
-//    }
 }
 
