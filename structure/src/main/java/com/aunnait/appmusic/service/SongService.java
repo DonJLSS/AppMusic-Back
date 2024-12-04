@@ -13,9 +13,13 @@ import com.aunnait.appmusic.model.mapper.SongMapper;
 import com.aunnait.appmusic.repository.AlbumRepository;
 import com.aunnait.appmusic.repository.ArtistRepository;
 import com.aunnait.appmusic.repository.SongRepository;
+import com.aunnait.appmusic.utils.DynamicSearchRequest;
 import com.aunnait.appmusic.utils.SongSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -27,8 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @SuppressWarnings("DuplicatedCode")
 @Service
@@ -129,17 +131,32 @@ public class SongService implements ISongService {
 
 
     @Override
-    public List<SongResponseDTO> searchSongs(String title, Long duration, Long minDuration, Long maxDuration,
-                                             String songUrl, String artistName, String albumName,
-                                             String sortBy, boolean isAscending) {
-        Specification<Song> spec = SongSpecification.getSongByAttributes(
-                title, duration, songUrl, minDuration, maxDuration, artistName, albumName);
+    public List<SongResponseDTO> searchSongs(DynamicSearchRequest searchRequest) {
+        Specification<Song> spec = Specification.where(null);
+        for (DynamicSearchRequest.SearchCriteria criteria : searchRequest.getListSearchCriteria()) {
+            spec = spec.and(SongSpecification.getSongSpecification(criteria.getKey(), criteria.getOperation(), criteria.getValue()));
+        }
 
-        Sort sort = isAscending ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Sort sort = Sort.unsorted();
+        for (DynamicSearchRequest.SortCriteria order : searchRequest.getListOrderCriteria()) {
+            Sort orderSort = order.getValueSortOrder() == DynamicSearchRequest.SortValue.ASC
+                    ? Sort.by(order.getSortBy()).ascending()
+                    : Sort.by(order.getSortBy()).descending();
+            sort = sort.and(orderSort);
+        }
 
-        return songRepository.findAll(spec, sort).stream()
+        Pageable pageable = PageRequest.of(
+                searchRequest.getPage().getPageIndex(),
+                searchRequest.getPage().getPageSize(),
+                sort
+        );
+        Page<Song> filtered = songRepository.findAll(spec,pageable);
+
+        List<SongResponseDTO> songsDTOs = filtered.stream()
                 .map(songMapper::convertToResponseDTO)
-                .collect(Collectors.toList());
+                .toList();
+
+        return songsDTOs;
     }
 
     @Override

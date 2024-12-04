@@ -1,16 +1,23 @@
 package com.aunnait.appmusic.rest;
 
+import com.aunnait.appmusic.model.Song;
 import com.aunnait.appmusic.model.dto.SongDTO;
 import com.aunnait.appmusic.model.dto.SongResponseDTO;
-import com.aunnait.appmusic.model.filters.SongSearchRequest;
 import com.aunnait.appmusic.model.mapper.SongMapper;
 import com.aunnait.appmusic.service.ISongService;
+import com.aunnait.appmusic.utils.DynamicSearchRequest;
+import com.aunnait.appmusic.utils.SongSpecification;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -105,25 +112,15 @@ public class SongController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
             @ApiResponse(responseCode = "500", description = "Internal Server Error"),
             @ApiResponse(responseCode = "204",description = "No Content")})
-    public ResponseEntity<List<SongResponseDTO>> searchSongs(@RequestBody SongSearchRequest searchRequest) {
+    public ResponseEntity<List<SongResponseDTO>> searchSongs(@RequestBody DynamicSearchRequest searchRequest) {
 
-        String sortBy = searchRequest.getSortBy() != null ? searchRequest.getSortBy() : "title"; //Default sorting by title
-        boolean isAscending = searchRequest.isAscending();
+        List<SongResponseDTO> songs = songService.searchSongs(searchRequest);
 
-        List<SongResponseDTO> songs = songService.searchSongs(
-                searchRequest.getTitle(),
-                searchRequest.getDuration(),
-                searchRequest.getMinDuration(),
-                searchRequest.getMaxDuration(),
-                searchRequest.getSongUrl(),
-                searchRequest.getArtistName(),
-                searchRequest.getAlbumName(),
-                sortBy,
-                isAscending
-        );
-        if (songs != null && !songs.isEmpty())
-            return new ResponseEntity<>(songs, HttpStatus.OK);
-        else return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        if (songs != null && !songs.isEmpty()) {
+            return ResponseEntity.ok(songs);
+        } else {
+            return ResponseEntity.noContent().build();
+        }
     }
 
     //--------------------------------------------------Genre-related operations--------------------------------------------------------
