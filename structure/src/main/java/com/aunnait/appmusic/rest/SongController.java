@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -111,6 +112,36 @@ public class SongController {
 
         if (songs != null && !songs.isEmpty()) {
             return ResponseEntity.ok(songs);
+        } else {
+            return ResponseEntity.noContent().build();
+        }
+    }
+
+    @Operation(description = "Finds songs given criteria and bundles into a List using GET")
+    @GetMapping("/search")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error"),
+            @ApiResponse(responseCode = "204",description = "No Content")})
+    public ResponseEntity<List<SongResponseDTO>> searchSongsQuery(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) Long duration,
+            @RequestParam(required = false) Long minDuration,
+            @RequestParam(required = false) Long maxDuration,
+            @RequestParam(required = false) String songUrl,
+            @RequestParam(required = false) String artistName,
+            @RequestParam(required = false) String albumName,
+            @RequestParam(defaultValue = "title") String sortBy,
+            @RequestParam(defaultValue = "ASC") String sortOrder,
+            @RequestParam(defaultValue = "0") int pageIndex,
+            @RequestParam(defaultValue = "10") int pageSize
+    ) {
+        List<SongResponseDTO> result = songService.searchSongsQuery(
+                title, duration, minDuration, maxDuration, songUrl, artistName, albumName,
+                sortBy, sortOrder, pageIndex, pageSize
+        );
+
+        if (result!=null && !result.isEmpty()) {
+            return ResponseEntity.ok(result);
         } else {
             return ResponseEntity.noContent().build();
         }

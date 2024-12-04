@@ -16,6 +16,9 @@ public interface ISongService extends SongOperations, GenreOperations {
     SongDTO updateSong(Integer id, SongDTO songDTO);
     SongDTO addSong(SongDTO songDTO);
     List<SongResponseDTO> searchSongs(DynamicSearchRequest searchRequest);
+    List<SongResponseDTO> searchSongsQuery(String title, Long duration, Long minDuration, Long maxDuration,
+                                           String songUrl, String artistName, String albumName,
+                                           String sortBy, String sortOrder, int pageIndex, int pageSize);
     SongResponseDTO patchSong(Integer id, Map<Object, Object> fields);
     void deleteSong(Integer id);
 }

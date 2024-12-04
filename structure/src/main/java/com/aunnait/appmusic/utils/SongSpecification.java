@@ -52,6 +52,7 @@ public class SongSpecification {
         };
     }
 
+    @SuppressWarnings("DuplicatedCode")
     public static Specification<Song> getSongSpecification(String key, DynamicSearchRequest.CriteriaOperation operation, String value) {
         return (root, query, criteriaBuilder) -> {
             Path<?> path;
