@@ -26,7 +26,7 @@ public class Artist {
     private String nationality;
 
     //Artist may have 0-N albums
-    @OneToMany(mappedBy = "artist", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "artist", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Album> albums = new ArrayList<>();
 
     //Artist may have 0-N songs

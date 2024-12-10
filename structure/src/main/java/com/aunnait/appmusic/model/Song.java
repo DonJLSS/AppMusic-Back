@@ -23,16 +23,16 @@ public class Song {
     private String title;
     private Long duration; //Changed to long bc persistence
     //Foreign key
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "albumId", nullable = true)
     private Album album;
     private String songUrl;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "artistId", nullable = false)
     private Artist artist;
 
-    @ManyToMany
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     @JoinTable(
             name = "song_genre",
             joinColumns = @JoinColumn(name = "songId"),

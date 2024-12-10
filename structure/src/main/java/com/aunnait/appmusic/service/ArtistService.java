@@ -2,11 +2,18 @@ package com.aunnait.appmusic.service;
 
 import com.aunnait.appmusic.model.Album;
 import com.aunnait.appmusic.model.Artist;
+import com.aunnait.appmusic.model.Genre;
+import com.aunnait.appmusic.model.Song;
 import com.aunnait.appmusic.model.dto.*;
+import com.aunnait.appmusic.model.dto.createdto.ArtistCreateDTO;
 import com.aunnait.appmusic.model.mapper.AlbumMapper;
 import com.aunnait.appmusic.model.mapper.ArtistMapper;
+import com.aunnait.appmusic.model.mapper.ResponseMapper;
+import com.aunnait.appmusic.repository.AlbumRepository;
 import com.aunnait.appmusic.repository.ArtistRepository;
 import com.aunnait.appmusic.exceptions.EntityNotFoundException;
+import com.aunnait.appmusic.repository.GenreRepository;
+import com.aunnait.appmusic.repository.SongRepository;
 import com.aunnait.appmusic.service.interfaces.IArtistService;
 import com.aunnait.appmusic.utils.AlbumOperations;
 import com.aunnait.appmusic.model.filters.DynamicSearchRequest;
@@ -24,23 +31,31 @@ import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 public class ArtistService implements IArtistService {
 
-    @Autowired
     ArtistRepository repository;
-    @Autowired
     ArtistMapper mapper;
-    @Autowired
     AlbumMapper albumMapper;
-    @Autowired
     AlbumOperations albumOperations;
     @Autowired
     private ArtistRepository artistRepository;
     @Autowired
     private ArtistMapper artistMapper;
+    @Autowired
+    private ResponseMapper generalMapper;
+    @Autowired
+    private SongRepository songRepository;
+    @Autowired
+    private AlbumRepository albumRepository;
+    @Autowired
+    private ResponseMapper responseMapper;
+
+    @Autowired
+    private GenreRepository genreRepository;
 
 
     @Override
@@ -50,6 +65,15 @@ public class ArtistService implements IArtistService {
                 .map(a -> mapper.convertToDTO(a))
                 .collect(Collectors.toList());
 
+    }
+
+    @Override
+    public List<ArtistResponseDTO> getArtistsComplete() {
+        List<Artist> artists = artistRepository.findAll();
+
+        return artists.stream()
+                .map(generalMapper::mapToResponseDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -85,6 +109,59 @@ public class ArtistService implements IArtistService {
         Artist newArtist = mapper.fromRequestToArtist(artistDTO);
         Artist savedArtist = repository.save(newArtist);
         return mapper.convertToDTO(savedArtist);
+    }
+
+    public ArtistResponseDTO createArtistComplete(ArtistCreateDTO artistCreateDTO) {
+        Artist artist = new Artist();
+        artist.setName(artistCreateDTO.getName());
+        artist.setNationality(artistCreateDTO.getNationality());
+        artist.setDateOfBirth(artistCreateDTO.getDateOfBirth());
+        Artist savedArtist = artistRepository.save(artist);
+
+        if (artistCreateDTO.getAlbums() != null){
+            List<Album> albums = artistCreateDTO.getAlbums().stream()
+                    .map(albumDTO->{
+                        Album album = new Album();
+                        album.setTitle(albumDTO.getTitle());
+                        album.setLaunchYear(albumDTO.getLaunchYear());
+                        album.setDescription(albumDTO.getDescription());
+                        album.setArtist(savedArtist);
+
+                        Album savedAlbum = albumRepository.save(album);
+
+                        if (albumDTO.getSongs() != null){
+                            List<Song> songs = albumDTO.getSongs().stream().map(songDTO->{
+                                Song song = new Song();
+                                song.setTitle(songDTO.getTitle());
+                                song.setDuration(songDTO.getDuration());
+                                song.setSongUrl(songDTO.getSongUrl());
+                                song.setAlbum(savedAlbum);
+                                song.setArtist(savedArtist);
+
+                                Song savedSong = songRepository.save(song);
+
+                                if (songDTO.getGenreNames() != null){
+                                    Set<Genre> genres = songDTO.getGenreNames().stream().map(genreName -> {
+                                        Genre genre = genreRepository.findByName(genreName)
+                                                .orElseGet(()->{
+                                                    Genre newGenre = new Genre();
+                                                    newGenre.setName(genreName);
+                                                    return genreRepository.save(newGenre);
+                                                });
+                                        return genre;
+                                    }).collect(Collectors.toSet());
+                                    savedSong.setGenres(genres);
+                                }
+
+                                return songRepository.save(savedSong);
+                            }).toList();
+                            savedAlbum.setSongs(songs);
+                        }
+                        return savedAlbum;
+                    }).toList();
+            artist.setAlbums(albums);
+        }
+        return responseMapper.mapToResponseDTO(savedArtist);
     }
 
 

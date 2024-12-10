@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -13,6 +14,7 @@ import java.util.Set;
 @Data //Lombok autogenerate getters/setters/toString/hash
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Schema(description = "Data Transfer Object representing a response for Song related updates")
 public class SongResponseDTO {
     @Schema(description = "Unique identifier for the response", example = "0")

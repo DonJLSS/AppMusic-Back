@@ -6,16 +6,19 @@ import com.aunnait.appmusic.model.Artist;
 import com.aunnait.appmusic.model.Genre;
 import com.aunnait.appmusic.model.Song;
 import com.aunnait.appmusic.model.dto.*;
+import com.aunnait.appmusic.model.dto.createdto.SongCreateDTO;
 import com.aunnait.appmusic.model.mapper.AlbumMapper;
 import com.aunnait.appmusic.model.mapper.ArtistMapper;
 import com.aunnait.appmusic.model.mapper.GenreMapper;
 import com.aunnait.appmusic.model.mapper.SongMapper;
 import com.aunnait.appmusic.repository.AlbumRepository;
 import com.aunnait.appmusic.repository.ArtistRepository;
+import com.aunnait.appmusic.repository.GenreRepository;
 import com.aunnait.appmusic.repository.SongRepository;
 import com.aunnait.appmusic.service.interfaces.ISongService;
 import com.aunnait.appmusic.model.filters.DynamicSearchRequest;
 import com.aunnait.appmusic.utils.SongSpecification;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
@@ -27,10 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("DuplicatedCode")
@@ -63,6 +63,8 @@ public class SongService implements ISongService {
     private ArtistRepository artistRepository;
     @Autowired
     private AlbumRepository albumRepository;
+    @Autowired
+    private GenreRepository genreRepository;
 
     @Override
     public List<SongResponseDTO> findAll() {
@@ -108,6 +110,12 @@ public class SongService implements ISongService {
         }
 
         Artist mapped = artistMapper.convertToEntity(foundArtist);
+
+        boolean isTitleUsed = mapped.getSongs().stream()
+                .anyMatch(s->s.getTitle().equals(songDTO.getTitle()));
+        if (isTitleUsed) {
+            throw new IllegalArgumentException("This artist has used this title before");
+        }
 
         Album album = null;
         if (songDTO.getAlbumName() != null && !songDTO.getAlbumName().isEmpty()) {
@@ -214,6 +222,55 @@ public class SongService implements ISongService {
         Song updated = songRepository.save(song);
         return songMapper.convertToResponseDTO(updated);
 
+    }
+
+    @Override
+    @Transactional
+    public SongResponseDTO createSong(SongCreateDTO songCreateDTO) {
+        Song song = new Song();
+        song.setTitle(songCreateDTO.getTitle());
+        song.setDuration(songCreateDTO.getDuration());
+        song.setSongUrl(songCreateDTO.getSongUrl());
+
+
+        if (songCreateDTO.getNewArtist() != null) {
+            ArtistRequestDTO newArtistDTO = songCreateDTO.getNewArtist();
+            Artist newArtist = new Artist();
+            newArtist.setName(newArtistDTO.getName());
+            newArtist.setNationality(newArtistDTO.getNationality());
+            newArtist.setDateOfBirth(newArtistDTO.getDateOfBirth());
+
+            Artist savedArtist = artistRepository.save(newArtist);
+            song.setArtist(savedArtist);
+        } else if (songCreateDTO.getArtistId() != null) {
+            Artist existingArtist = artistRepository.findById(songCreateDTO.getArtistId())
+                    .orElseThrow(() -> new EntityNotFoundException("Artist not found"));
+            song.setArtist(existingArtist);
+        } else {
+            throw new IllegalArgumentException("Either artistId or newArtist must be provided");
+        }
+
+        if (songCreateDTO.getAlbumId() != null) {
+            Album album = albumRepository.findById(songCreateDTO.getAlbumId())
+                    .orElseThrow(() -> new EntityNotFoundException("Album not found"));
+            song.setAlbum(album);
+        }
+        if (songCreateDTO.getGenreIds() != null && !songCreateDTO.getGenreIds().isEmpty()) {
+            List<Genre> existingGenres = genreRepository.findAllById(songCreateDTO.getGenreIds());
+            song.getGenres().addAll(existingGenres);
+        }
+
+        if (songCreateDTO.getNewGenres() != null && !songCreateDTO.getNewGenres().isEmpty()) {
+            for (GenreDTO newGenreDTO : songCreateDTO.getNewGenres()) {
+                Genre newGenre = new Genre();
+                newGenre.setName(newGenreDTO.getName());
+                newGenre.setYearOfOrigin(newGenreDTO.getYearOfOrigin());
+                newGenre.setDescription(newGenreDTO.getDescription());
+                song.getGenres().add(newGenre);
+            }
+        }
+        Song savedSong = songRepository.save(song);
+        return songMapper.convertToResponseDTO(savedSong);
     }
 
     @Override

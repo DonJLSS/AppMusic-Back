@@ -1,6 +1,7 @@
 package com.aunnait.appmusic.rest;
 
 import com.aunnait.appmusic.model.dto.*;
+import com.aunnait.appmusic.model.dto.createdto.ArtistCreateDTO;
 import com.aunnait.appmusic.service.interfaces.IArtistService;
 import com.aunnait.appmusic.model.filters.DynamicSearchRequest;
 import io.swagger.v3.oas.annotations.Operation;
@@ -43,6 +44,18 @@ public class ArtistsController {
         else return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @Operation(description = "Returns all Artist bundled into recursive Response")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error"),
+            @ApiResponse(responseCode = "204",description = "No Content")})
+    @GetMapping("/complete")
+    public ResponseEntity<List<ArtistResponseDTO>> getArtistsComplete() {
+        List<ArtistResponseDTO> artists = artistService.getArtistsComplete();
+        if (artists.isEmpty())
+            return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(artists);
+    }
+
     @Operation(description = "Returns the Artist given its id")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
             @ApiResponse(responseCode = "500", description = "Internal Server Error"),
@@ -76,6 +89,17 @@ public class ArtistsController {
         ArtistDTO addedArtistDTO = artistService.addArtist(artistDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(addedArtistDTO);
     }
+    @Operation(description = "Creates an Artist recursively")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Artist created successfully"),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error")
+    })
+    @PostMapping("/complete")
+    public ResponseEntity<ArtistResponseDTO> addArtistComplete(@RequestBody ArtistCreateDTO artistCreateDTO){
+        ArtistResponseDTO artist = artistService.createArtistComplete(artistCreateDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(artist);
+    }
+
 
     @Operation(description = "Updates any attribute of the Artist given")
     @PatchMapping("/{id}")

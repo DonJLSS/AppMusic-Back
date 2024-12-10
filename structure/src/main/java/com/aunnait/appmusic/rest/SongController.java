@@ -2,6 +2,7 @@ package com.aunnait.appmusic.rest;
 
 import com.aunnait.appmusic.model.dto.SongDTO;
 import com.aunnait.appmusic.model.dto.SongResponseDTO;
+import com.aunnait.appmusic.model.dto.createdto.SongCreateDTO;
 import com.aunnait.appmusic.model.mapper.SongMapper;
 import com.aunnait.appmusic.service.interfaces.ISongService;
 import com.aunnait.appmusic.model.filters.DynamicSearchRequest;
@@ -145,6 +146,16 @@ public class SongController {
         } else {
             return ResponseEntity.noContent().build();
         }
+    }
+
+    @Operation(description = "Creates a Song using Cascade method")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error"),
+            @ApiResponse(responseCode = "404",description = "Not found")})
+    @PostMapping("/create")
+    public ResponseEntity<SongResponseDTO> createSong(@RequestBody SongCreateDTO songCreateDTO) {
+        SongResponseDTO response = songService.createSong(songCreateDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     //--------------------------------------------------Genre-related operations--------------------------------------------------------
