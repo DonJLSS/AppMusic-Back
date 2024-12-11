@@ -17,6 +17,7 @@ import com.aunnait.appmusic.repository.SongRepository;
 import com.aunnait.appmusic.service.interfaces.IArtistService;
 import com.aunnait.appmusic.utils.AlbumOperations;
 import com.aunnait.appmusic.model.filters.DynamicSearchRequest;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,7 +27,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import com.aunnait.appmusic.utils.ArtistSpecification;
 import org.springframework.util.ReflectionUtils;
-
 import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.util.List;
@@ -111,6 +111,8 @@ public class ArtistService implements IArtistService {
         return mapper.convertToDTO(savedArtist);
     }
 
+    @Override
+    @Transactional
     public ArtistResponseDTO createArtistComplete(ArtistCreateDTO artistCreateDTO) {
         Artist artist = new Artist();
         artist.setName(artistCreateDTO.getName());
@@ -142,13 +144,12 @@ public class ArtistService implements IArtistService {
 
                                 if (songDTO.getGenreNames() != null){
                                     Set<Genre> genres = songDTO.getGenreNames().stream().map(genreName -> {
-                                        Genre genre = genreRepository.findByName(genreName)
+                                        return genreRepository.findByName(genreName)
                                                 .orElseGet(()->{
                                                     Genre newGenre = new Genre();
                                                     newGenre.setName(genreName);
                                                     return genreRepository.save(newGenre);
                                                 });
-                                        return genre;
                                     }).collect(Collectors.toSet());
                                     savedSong.setGenres(genres);
                                 }
@@ -185,6 +186,7 @@ public class ArtistService implements IArtistService {
     }
 
     //Add an album to an existing artist
+    @Override
     public ArtistDTO addAlbum(Integer artistId, AlbumRequestDTO albumDTO) {
         Artist artist = ErrorHandlerEntity(artistId);
         if (!albumDTO.getArtistName().equals(artist.getName()))
@@ -200,6 +202,7 @@ public class ArtistService implements IArtistService {
 
 
     //Album removal from list (doesn't delete the album from database)
+    @Override
     public ArtistDTO removeAlbum(Integer artistId, AlbumDTO albumDTO) {
         Artist artist = ErrorHandlerEntity(artistId);
         Album album = albumMapper.convertToEntity(albumDTO);
@@ -239,11 +242,9 @@ public class ArtistService implements IArtistService {
         );
         Page<Artist> filtered = artistRepository.findAll(spec,pageable);
 
-        List<ArtistDTO> artistDTOs = filtered.stream()
+        return filtered.stream()
                 .map(mapper::convertToDTO)
                 .toList();
-
-        return artistDTOs;
     }
 
 
@@ -258,8 +259,7 @@ public class ArtistService implements IArtistService {
     }
 
     private Artist ErrorHandlerEntity(Integer id) {
-        Artist artist = repository.findById(id)
+        return repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Artist: " + id + " not found"));
-        return artist;
     }
 }

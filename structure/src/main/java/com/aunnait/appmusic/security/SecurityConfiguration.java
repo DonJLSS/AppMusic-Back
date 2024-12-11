@@ -4,10 +4,12 @@ package com.aunnait.appmusic.security;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -21,21 +23,41 @@ import static org.springframework.security.config.Customizer.withDefaults;
  */
 @Configuration
 @EnableWebSecurity
-public class SecurityConfiguration {
-//Regular security config
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception { //Applies before reaching controllers
-        http
-                .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST).authenticated()
-                        .requestMatchers(HttpMethod.GET).hasRole("ADMIN")
-                        .anyRequest().authenticated()
-                )
-                .httpBasic(withDefaults())
-                .formLogin(withDefaults());
-        return http.build();
+public class SecurityConfiguration{
+
+    private final JwtTokenFilter jwtTokenFilter;
+
+    public SecurityConfiguration(JwtTokenFilter jwtTokenFilter) {
+        this.jwtTokenFilter = jwtTokenFilter;
     }
+
+    protected void configure(HttpSecurity http) throws Exception {
+        http.csrf(csrf -> csrf.disable())
+                .authorizeRequests()
+                .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/user/**").hasRole("USER")
+                .anyRequest().authenticated()
+                .and()
+                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
+    }
+
+
+
+//Regular security config
+//    @Bean
+//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception { //Applies before reaching controllers
+//        http
+//                .csrf(csrf -> csrf.disable())
+//                .authorizeHttpRequests(auth -> auth
+//                        .requestMatchers(HttpMethod.POST).authenticated()
+//                        .requestMatchers(HttpMethod.GET).hasRole("ADMIN")
+//                        .anyRequest().authenticated()
+//                )
+//                .httpBasic(withDefaults())
+//                .formLogin(withDefaults());
+//        return http.build();
+//    }
 
     //Test security config.
 //    @Bean
@@ -48,17 +70,17 @@ public class SecurityConfiguration {
 //                );
 //        return http.build();
 //    }
-    @Bean
-    CorsConfigurationSource corsConfigurationSource() { //CORS basic configuration
-        CorsConfiguration cc = new CorsConfiguration();
-        cc.setAllowedOrigins(Arrays.asList("/*"));
-        cc.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
-        cc.setAllowedHeaders(Arrays.asList("Origin", "Accept", "X-Requested-With", "Content-Type", "Authorization"));
-        cc.setExposedHeaders(Arrays.asList("Access-Control-Allow-Origin", "Access-Control-Allow-Credentials"));
-        cc.setAllowCredentials(true);
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", cc);
-        return source;
-    }
+//    @Bean
+//    CorsConfigurationSource corsConfigurationSource() { //CORS basic configuration
+//        CorsConfiguration cc = new CorsConfiguration();
+//        cc.setAllowedOrigins(Arrays.asList("/*"));
+//        cc.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
+//        cc.setAllowedHeaders(Arrays.asList("Origin", "Accept", "X-Requested-With", "Content-Type", "Authorization"));
+//        cc.setExposedHeaders(Arrays.asList("Access-Control-Allow-Origin", "Access-Control-Allow-Credentials"));
+//        cc.setAllowCredentials(true);
+//
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/**", cc);
+//        return source;
+//    }
 }
