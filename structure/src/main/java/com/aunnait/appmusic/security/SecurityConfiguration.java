@@ -25,39 +25,42 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableWebSecurity
 public class SecurityConfiguration{
 
-    private final JwtTokenFilter jwtTokenFilter;
-
-    public SecurityConfiguration(JwtTokenFilter jwtTokenFilter) {
-        this.jwtTokenFilter = jwtTokenFilter;
-    }
-
-    protected void configure(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())
-                .authorizeRequests()
-                .requestMatchers("/auth/**").permitAll()
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/user/**").hasRole("USER")
-                .anyRequest().authenticated()
-                .and()
-                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
-    }
+//    private final JwtTokenFilter jwtTokenFilter;
+//
+//    public SecurityConfiguration(JwtTokenFilter jwtTokenFilter) {
+//        this.jwtTokenFilter = jwtTokenFilter;
+//    }
+//
+//    protected void configure(HttpSecurity http) throws Exception {
+//        http.csrf(csrf -> csrf.disable())
+//                .authorizeRequests()
+//                .requestMatchers(HttpMethod.GET).permitAll()
+//                .requestMatchers(HttpMethod.POST).hasRole("ADMIN")
+//                .requestMatchers(HttpMethod.PUT).hasRole("ADMIN")
+//                .requestMatchers(HttpMethod.PATCH).hasRole("ADMIN")   //Patch treat
+//                .anyRequest().authenticated()
+//                .and()
+//                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
+//    }
 
 
 
 //Regular security config
-//    @Bean
-//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception { //Applies before reaching controllers
-//        http
-//                .csrf(csrf -> csrf.disable())
-//                .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers(HttpMethod.POST).authenticated()
-//                        .requestMatchers(HttpMethod.GET).hasRole("ADMIN")
-//                        .anyRequest().authenticated()
-//                )
-//                .httpBasic(withDefaults())
-//                .formLogin(withDefaults());
-//        return http.build();
-//    }
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception { //Applies before reaching controllers
+        http
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.POST).authenticated()
+                        .requestMatchers(HttpMethod.PATCH).authenticated()
+                        .requestMatchers(HttpMethod.PUT).authenticated()
+                        .requestMatchers(HttpMethod.GET).hasRole("ADMIN")
+                        .anyRequest().authenticated()
+                )
+                .httpBasic(withDefaults())
+                .formLogin(withDefaults());
+        return http.build();
+    }
 
     //Test security config.
 //    @Bean
@@ -74,7 +77,7 @@ public class SecurityConfiguration{
 //    CorsConfigurationSource corsConfigurationSource() { //CORS basic configuration
 //        CorsConfiguration cc = new CorsConfiguration();
 //        cc.setAllowedOrigins(Arrays.asList("/*"));
-//        cc.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
+//        cc.setAllowedMethods(Arrays.asList("GET", "POST", "PATCH", "PUT", "DELETE"));
 //        cc.setAllowedHeaders(Arrays.asList("Origin", "Accept", "X-Requested-With", "Content-Type", "Authorization"));
 //        cc.setExposedHeaders(Arrays.asList("Access-Control-Allow-Origin", "Access-Control-Allow-Credentials"));
 //        cc.setAllowCredentials(true);
