@@ -65,7 +65,7 @@ public class SongController {
             @ApiResponse(responseCode = "404",description = "Not found")})
     @PutMapping("/{id}")
     public ResponseEntity<SongDTO> updateSong(@PathVariable Integer id,
-                                              @Valid @RequestBody SongDTO songDTO){
+                                              @RequestBody SongDTO songDTO){
         SongDTO songUpdated = songService.updateSong(id,songDTO);
         return ResponseEntity.ok(songUpdated);
     }

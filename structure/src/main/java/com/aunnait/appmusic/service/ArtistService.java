@@ -37,14 +37,14 @@ import java.util.stream.Collectors;
 @Service
 public class ArtistService implements IArtistService {
 
+    @Autowired
     ArtistRepository repository;
+    @Autowired
     ArtistMapper mapper;
+    @Autowired
     AlbumMapper albumMapper;
+    @Autowired
     AlbumOperations albumOperations;
-    @Autowired
-    private ArtistRepository artistRepository;
-    @Autowired
-    private ArtistMapper artistMapper;
     @Autowired
     private ResponseMapper generalMapper;
     @Autowired
@@ -69,7 +69,7 @@ public class ArtistService implements IArtistService {
 
     @Override
     public List<ArtistResponseDTO> getArtistsComplete() {
-        List<Artist> artists = artistRepository.findAll();
+        List<Artist> artists = repository.findAll();
 
         return artists.stream()
                 .map(generalMapper::mapToResponseDTO)
@@ -118,7 +118,7 @@ public class ArtistService implements IArtistService {
         artist.setName(artistCreateDTO.getName());
         artist.setNationality(artistCreateDTO.getNationality());
         artist.setDateOfBirth(artistCreateDTO.getDateOfBirth());
-        Artist savedArtist = artistRepository.save(artist);
+        Artist savedArtist = repository.save(artist);
 
         if (artistCreateDTO.getAlbums() != null){
             List<Album> albums = artistCreateDTO.getAlbums().stream()
@@ -240,7 +240,7 @@ public class ArtistService implements IArtistService {
                 searchRequest.getPage().getPageSize(),
                 sort
         );
-        Page<Artist> filtered = artistRepository.findAll(spec,pageable);
+        Page<Artist> filtered = repository.findAll(spec,pageable);
 
         return filtered.stream()
                 .map(mapper::convertToDTO)

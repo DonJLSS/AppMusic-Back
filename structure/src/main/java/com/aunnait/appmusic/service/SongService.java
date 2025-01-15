@@ -81,10 +81,56 @@ public class SongService implements ISongService {
     }
 
     @Override
+    @Transactional
     public SongDTO updateSong(Integer id, SongDTO songDTO) {
-        Song song = EntityErrorHandler(id);
+
+        EntityErrorHandler(id);
         ErrorHandler(songDTO);
-        Song updated = songRepository.save(song);
+
+        if (songDTO.getArtistName() == null || songDTO.getArtistName().isEmpty()) {
+            throw new IllegalArgumentException("Artist name cannot be null or empty");
+        }
+
+        Optional<ArtistDTO> artist = artistService.findAllArtistByAttributes(songDTO.getArtistName(), null, null)
+                .stream()
+                .findFirst();
+
+        if (!artist.isPresent()) {
+            throw new EntityNotFoundException("Artist: " + songDTO.getArtistName() + " not found");
+        }
+
+        ArtistDTO foundArtist = artist.get();
+        if (foundArtist.getName() == null || foundArtist.getNationality() == null) {
+            throw new IllegalStateException("Artist data is incomplete: " + foundArtist);
+        }
+
+        Artist mapped = artistMapper.convertToEntity(foundArtist);
+
+        boolean isTitleUsed = mapped.getSongs().stream()
+                .anyMatch(s->s.getTitle().equals(songDTO.getTitle()));
+        if (isTitleUsed) {
+            throw new IllegalArgumentException("This artist has used this title before");
+        }
+
+        Album album = null;
+        if (songDTO.getAlbumName() != null && !songDTO.getAlbumName().isEmpty()) {
+            Optional<AlbumDTO> albumDTOOptional = albumService.findAllAlbumByAttributes(
+                    songDTO.getAlbumName(), null, null, null, null
+            ).stream().findFirst();
+
+            if (albumDTOOptional.isPresent()) {
+                album = albumMapper.convertToEntity(albumDTOOptional.get());
+            } else {
+                throw new EntityNotFoundException("Album: " + songDTO.getAlbumName() + " not found");
+            }
+        }
+
+        if(!album.getArtist().equals(mapped)){
+            throw new IllegalArgumentException("This artist does not own this album");
+        }
+
+        Song toUpdate = songMapper.convertToEntity(songDTO, album, mapped);
+        Song updated = songRepository.save(toUpdate);
         return songMapper.convertToDTO(updated);
     }
 
@@ -128,6 +174,10 @@ public class SongService implements ISongService {
             } else {
                 throw new EntityNotFoundException("Album: " + songDTO.getAlbumName() + " not found");
             }
+        }
+
+        if(!album.getArtist().equals(mapped)){
+            throw new IllegalArgumentException("This artist does not own this album");
         }
 
 

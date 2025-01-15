@@ -23,6 +23,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
  */
 @Configuration
 @EnableWebSecurity
+
 public class SecurityConfiguration{
 
 //    private final JwtTokenFilter jwtTokenFilter;
@@ -46,33 +47,33 @@ public class SecurityConfiguration{
 
 
 //Regular security config
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception { //Applies before reaching controllers
-        http
-                .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST).authenticated()
-                        .requestMatchers(HttpMethod.PATCH).authenticated()
-                        .requestMatchers(HttpMethod.PUT).authenticated()
-                        .requestMatchers(HttpMethod.GET).hasRole("ADMIN")
-                        .anyRequest().authenticated()
-                )
-                .httpBasic(withDefaults())
-                .formLogin(withDefaults());
-        return http.build();
-    }
-
-    //Test security config.
 //    @Bean
 //    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception { //Applies before reaching controllers
 //        http
-//                //.cors(AbstractHttpConfigurer::disable)
-//                .csrf(AbstractHttpConfigurer::disable)
+//                .csrf(csrf -> csrf.disable())
 //                .authorizeHttpRequests(auth -> auth
-//                        .anyRequest().permitAll()
-//                );
+//                        .requestMatchers(HttpMethod.POST).authenticated()
+//                        .requestMatchers(HttpMethod.PATCH).authenticated()
+//                        .requestMatchers(HttpMethod.PUT).authenticated()
+//                        .requestMatchers(HttpMethod.GET).hasRole("ADMIN")
+//                        .anyRequest().authenticated()
+//                )
+//                .httpBasic(withDefaults())
+//                .formLogin(withDefaults());
 //        return http.build();
 //    }
+
+    //Test security config.
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception { //Applies before reaching controllers
+        http
+                .cors(AbstractHttpConfigurer::disable)
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().permitAll()
+                );
+        return http.build();
+    }
 //    @Bean
 //    CorsConfigurationSource corsConfigurationSource() { //CORS basic configuration
 //        CorsConfiguration cc = new CorsConfiguration();
