@@ -88,7 +88,7 @@ public class ArtistService implements IArtistService {
         ErrorHandler(artistDTO);
         //Unique name on artists
         if (findAllArtistByAttributes(artistDTO.getName(), null, null).stream()
-                .anyMatch(a -> a.getName().equals(artistDTO.getName())))
+                .anyMatch(a -> a.getName().equals(artistDTO.getName()) && !a.getId().equals(id)))
             throw new IllegalArgumentException("Name: " + artistDTO.getName() + " already in use");
 
         artistToUpdate.setName(artistDTO.getName());
