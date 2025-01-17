@@ -93,6 +93,7 @@ public class ArtistService implements IArtistService {
 
         artistToUpdate.setName(artistDTO.getName());
         artistToUpdate.setNationality(artistDTO.getNationality());
+        artistToUpdate.setDateOfBirth(artistDTO.getDateOfBirth());
 
         Artist updated = repository.save(artistToUpdate);
         return mapper.convertToDTO(updated);

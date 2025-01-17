@@ -174,11 +174,13 @@ public class SongService implements ISongService {
             } else {
                 throw new EntityNotFoundException("Album: " + songDTO.getAlbumName() + " not found");
             }
+
+            if(!album.getArtist().equals(mapped)){
+                throw new IllegalArgumentException("This artist does not own this album");
+            }
         }
 
-        if(!album.getArtist().equals(mapped)){
-            throw new IllegalArgumentException("This artist does not own this album");
-        }
+
 
 
         Song newSong = songMapper.convertToEntity(songDTO, album, mapped);
