@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -123,25 +122,18 @@ public class SongController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"),
             @ApiResponse(responseCode = "500", description = "Internal Server Error"),
             @ApiResponse(responseCode = "204",description = "No Content")})
-    public ResponseEntity<List<SongResponseDTO>> searchSongsQuery(
-            @RequestParam(required = false) String title,
-            @RequestParam(required = false) Long duration,
-            @RequestParam(required = false) Long minDuration,
-            @RequestParam(required = false) Long maxDuration,
-            @RequestParam(required = false) String songUrl,
-            @RequestParam(required = false) String artistName,
-            @RequestParam(required = false) String albumName,
-            @RequestParam(defaultValue = "title") String sortBy,
-            @RequestParam(defaultValue = "ASC") String sortOrder,
-            @RequestParam(defaultValue = "0") int pageIndex,
-            @RequestParam(defaultValue = "10") int pageSize
-    ) {
-        List<SongResponseDTO> result = songService.searchSongsQuery(
-                title, duration, minDuration, maxDuration, songUrl, artistName, albumName,
-                sortBy, sortOrder, pageIndex, pageSize
-        );
+    public ResponseEntity<Page<SongResponseDTO>> searchSongsQuery(
+            @RequestParam(name = "page", defaultValue = "0") Integer page,
+            @RequestParam(name = "size", defaultValue = "10") Integer size,
+            @RequestParam(name = "title", required = false) String title,
+            @RequestParam(name = "duration", required = false) Long duration,
+            @RequestParam(name = "artistName", required = false) String artistName,
+            @RequestParam(name = "albumName", required = false) String albumName) {
 
-        if (result!=null && !result.isEmpty()) {
+
+        Page<SongResponseDTO> result = songService.searchSongsQuery(page,size,title,duration,artistName,albumName);
+
+        if (result.hasContent()) {
             return ResponseEntity.ok(result);
         } else {
             return ResponseEntity.noContent().build();

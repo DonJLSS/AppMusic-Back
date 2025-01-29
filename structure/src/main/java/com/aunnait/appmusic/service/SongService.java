@@ -221,47 +221,16 @@ public class SongService implements ISongService {
     }
 
     @Override
-    public List<SongResponseDTO> searchSongsQuery(String title, Long duration, Long minDuration, Long maxDuration,
-                                                  String songUrl, String artistName, String albumName,
-                                                  String sortBy, String sortOrder, int pageIndex, int pageSize){
-        Specification<Song> spec = Specification.where(null);
+    public Page<SongResponseDTO> searchSongsQuery(Integer page, Integer size, String title,
+                                                  Long duration, String artistName, String albumName) {
 
-        if (title != null) {
-            spec = spec.and(SongSpecification.getSongSpecification("title", DynamicSearchRequest.CriteriaOperation.CONTAINS, title));
-        }
-        if (duration != null) {
-            spec = spec.and(SongSpecification.getSongSpecification("duration", DynamicSearchRequest.CriteriaOperation.EQUALS, String.valueOf(duration)));
-        }
-        if (minDuration != null) {
-            spec = spec.and(SongSpecification.getSongSpecification("duration", DynamicSearchRequest.CriteriaOperation.GREATER_THAN, String.valueOf(minDuration)));
-        }
-        if (maxDuration != null) {
-            spec = spec.and(SongSpecification.getSongSpecification("duration", DynamicSearchRequest.CriteriaOperation.LESS_THAN, String.valueOf(maxDuration)));
-        }
-        if (songUrl != null) {
-            spec = spec.and(SongSpecification.getSongSpecification("songUrl", DynamicSearchRequest.CriteriaOperation.CONTAINS, songUrl));
-        }
-        if (artistName != null) {
-            spec = spec.and(SongSpecification.getSongSpecification("artist.name", DynamicSearchRequest.CriteriaOperation.CONTAINS, artistName));
-        }
-        if (albumName != null) {
-            spec = spec.and(SongSpecification.getSongSpecification("album.title", DynamicSearchRequest.CriteriaOperation.CONTAINS, albumName));
-        }
+        Pageable pageable = PageRequest.of(page, size);
+        Specification<Song> spec = SongSpecification.getSongByAttributes(title,artistName,albumName,duration);
+        Page<Song> songsPage = songRepository.findAll(spec, pageable);
 
-        Sort sort = sortOrder.equalsIgnoreCase("ASC")
-                ? Sort.by(sortBy).ascending()
-                : Sort.by(sortBy).descending();
-
-        Pageable pageable = PageRequest.of(pageIndex, pageSize, sort);
-
-        Page<Song> filtered = songRepository.findAll(spec,pageable);
-
-        List<SongResponseDTO> songsDTOs = filtered.stream()
-                .map(songMapper::convertToResponseDTO)
-                .toList();
-
-        return songsDTOs;
+        return songsPage.map(songMapper::convertToResponseDTO);
     }
+
 
     @Override
     public SongResponseDTO patchSong(Integer id, Map<Object, Object> fields){
