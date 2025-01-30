@@ -222,10 +222,13 @@ public class SongService implements ISongService {
 
     @Override
     public Page<SongResponseDTO> searchSongsQuery(Integer page, Integer size, String title,
-                                                  Long duration, String artistName, String albumName) {
+                                                  Long duration, String artistName, String albumName, String sortBy, String sortDirection) {
 
-        Pageable pageable = PageRequest.of(page, size);
-        Specification<Song> spec = SongSpecification.getSongByAttributes(title,artistName,albumName,duration);
+        Sort.Direction direction = Sort.Direction.fromString(sortDirection != null ? sortDirection : "ASC");
+        Sort sort = Sort.by(direction, sortBy != null ? sortBy : "title");
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Specification<Song> spec = SongSpecification.getSongByAttributes(title, artistName, albumName, duration);
         Page<Song> songsPage = songRepository.findAll(spec, pageable);
 
         return songsPage.map(songMapper::convertToResponseDTO);

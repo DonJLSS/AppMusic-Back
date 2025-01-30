@@ -128,10 +128,11 @@ public class SongController {
             @RequestParam(name = "title", required = false) String title,
             @RequestParam(name = "duration", required = false) Long duration,
             @RequestParam(name = "artistName", required = false) String artistName,
-            @RequestParam(name = "albumName", required = false) String albumName) {
+            @RequestParam(name = "albumName", required = false) String albumName,
+            @RequestParam(name = "sortBy", defaultValue = "title") String sortBy,
+            @RequestParam(name = "sortDirection", defaultValue = "asc") String sortDirection) {
 
-
-        Page<SongResponseDTO> result = songService.searchSongsQuery(page,size,title,duration,artistName,albumName);
+        Page<SongResponseDTO> result = songService.searchSongsQuery(page, size, title, duration, artistName, albumName, sortBy, sortDirection);
 
         if (result.hasContent()) {
             return ResponseEntity.ok(result);
